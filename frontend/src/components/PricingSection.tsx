@@ -4,7 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 
-export const PricingSection = () => {
+export const PricingSection = ({ onBookNow }: { onBookNow?: () => void }) => {
   const pricingPlans = [
     {
       name: "Basic Service",
@@ -111,9 +111,10 @@ export const PricingSection = () => {
                 </ul>
 
                 <Button
+                  onClick={onBookNow}
                   className={`w-full ${plan.popular
-                      ? 'bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-600 hover:to-orange-700 text-white shadow-lg shadow-amber-500/20'
-                      : 'bg-slate-900 hover:bg-slate-800 text-white'
+                    ? 'bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-600 hover:to-orange-700 text-white shadow-lg shadow-amber-500/20'
+                    : 'bg-slate-900 hover:bg-slate-800 text-white'
                     }`}
                 >
                   Book Now

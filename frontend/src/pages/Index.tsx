@@ -76,6 +76,10 @@ const Index = () => {
     document.getElementById('services')?.scrollIntoView({ behavior: 'smooth' });
   };
 
+  const scrollToBooking = () => {
+    document.getElementById('booking')?.scrollIntoView({ behavior: 'smooth' });
+  };
+
   return (
     <div className="min-h-screen bg-slate-50 font-sans">
       {/* Navigation */}
@@ -409,6 +413,14 @@ const Index = () => {
           </div>
         </div>
       </section>
+
+      {/* Pricing Section */}
+      <PricingSection onBookNow={scrollToBooking} />
+
+      {/* Booking Section */}
+      <div id="booking">
+        <BookingWidget />
+      </div>
 
       {/* Contact Section */}
       <section id="contact" className="py-24 bg-slate-50">
