@@ -22,6 +22,7 @@ export const BookingWidget = () => {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
+  const [area, setArea] = useState("");
   const { toast } = useToast();
 
   const services = [
@@ -40,8 +41,8 @@ export const BookingWidget = () => {
     "6:00 PM - 8:00 PM"
   ];
 
-  const handleBooking = () => {
-    if (!selectedService || !selectedDate || !selectedTime || !name || !phone) {
+  const handleBooking = async () => {
+    if (!selectedService || !selectedDate || !selectedTime || !name || !phone || !area) {
       toast({
         title: "Missing Information",
         description: "Please fill in all details to book your service.",
@@ -50,15 +51,42 @@ export const BookingWidget = () => {
       return;
     }
 
-    // Show success dialog
-    setIsDialogOpen(true);
+    try {
+      const response = await fetch('http://localhost:5000/api/bookings', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          service: selectedService,
+          date: selectedDate,
+          time: selectedTime,
+          name,
+          phone,
+          area
+        }),
+      });
 
-    // Reset form
-    console.log("Booking submitted:", { service: selectedService, date: selectedDate, time: selectedTime, name, phone });
-    toast({
-      title: "Booking Received",
-      description: "We have received your service request.",
-    });
+      if (response.ok) {
+        setIsDialogOpen(true);
+        // Reset form
+        setSelectedService("");
+        setSelectedDate("");
+        setSelectedTime("");
+        setName("");
+        setPhone("");
+        setArea("");
+      } else {
+        throw new Error('Failed to submit booking');
+      }
+    } catch (error) {
+      console.error('Booking error:', error);
+      toast({
+        title: "Error",
+        description: "Something went wrong. Please try again.",
+        variant: "destructive",
+      });
+    }
   };
 
   return (
@@ -171,7 +199,12 @@ export const BookingWidget = () => {
                     <MapPin className="w-4 h-4 mr-2 text-blue-900" />
                     Area/Location
                   </Label>
-                  <Input placeholder="Enter your area" className="p-3" />
+                  <Input
+                    placeholder="Enter your area"
+                    className="p-3"
+                    value={area}
+                    onChange={(e) => setArea(e.target.value)}
+                  />
                 </div>
               </div>
 
