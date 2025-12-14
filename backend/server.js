@@ -6,6 +6,7 @@ require('dotenv').config();
 const app = express();
 const PORT = process.env.PORT || 5000;
 
+const authRoutes = require('./routes/auth');
 const bookingRoutes = require('./routes/bookings');
 
 // Middleware
@@ -14,8 +15,14 @@ app.use(express.json());
 
 // Routes
 app.use('/api/bookings', bookingRoutes);
+app.use('/api/auth', authRoutes);
 
 // Database Connection
+if (!process.env.MONGO_URI) {
+    console.error('FATAL ERROR: MONGO_URI is not defined.');
+    process.exit(1);
+}
+
 mongoose.connect(process.env.MONGO_URI)
     .then(() => console.log('MongoDB connected successfully'))
     .catch(err => console.error('MongoDB connection error:', err));
