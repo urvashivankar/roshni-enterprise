@@ -25,7 +25,12 @@ app.get('/', (req, res) => {
     res.send('Backend is running!');
 });
 
-// Start Server
-app.listen(PORT, () => {
-    console.log(`Server is running on port ${PORT}`);
-});
+// Export the app for Vercel
+module.exports = app;
+
+// Start Server only if running directly (not in Vercel)
+if (require.main === module) {
+    app.listen(PORT, () => {
+        console.log(`Server is running on port ${PORT}`);
+    });
+}

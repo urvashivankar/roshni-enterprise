@@ -28,6 +28,8 @@ export const BookingWidget = () => {
   const services = [
     "AC Installation",
     "Gas Refilling",
+    "AC Service (Simple)",
+    "AC Service (Water)",
     "Emergency Repair",
     "Annual Maintenance",
     "Deep Cleaning"
@@ -52,7 +54,8 @@ export const BookingWidget = () => {
     }
 
     try {
-      const response = await fetch('http://localhost:5000/api/bookings', {
+      // Use relative URL which works with proxy locally and Vercel rewrites in production
+      const response = await fetch('/api/bookings', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
