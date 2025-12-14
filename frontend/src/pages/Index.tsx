@@ -149,7 +149,7 @@ const Index = () => {
 
       {/* Hero Section */}
       <section className="relative py-24 overflow-hidden bg-slate-900">
-        <div className="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1621905251189-08b45d6a269e?q=80&w=2070&auto=format&fit=crop')] bg-cover bg-center opacity-10"></div>
+        <div className="absolute inset-0 bg-[url('/ac-servicer.png')] bg-cover bg-center opacity-10"></div>
         <div className="absolute inset-0 bg-gradient-to-r from-slate-900 via-slate-900/95 to-slate-900/80"></div>
 
         <div className="container mx-auto px-4 relative z-10">
@@ -224,7 +224,7 @@ const Index = () => {
                   </div>
                 </div>
                 <img
-                  src="https://images.unsplash.com/photo-1621905251189-08b45d6a269e?w=800&q=80"
+                  src="/ac-servicer.png"
                   alt="Premium AC Service"
                   className="w-full h-[500px] object-cover rounded-[2rem] shadow-2xl border-4 border-slate-800/50 hover:scale-[1.01] transition-all duration-700"
                 />
