@@ -475,6 +475,8 @@ const Index = () => {
               <span>© 2024 Roshni Enterprise</span>
               <span>•</span>
               <span>All rights reserved</span>
+              <span>•</span>
+              <a href="/admin" className="hover:text-slate-300 transition-colors">Admin Login</a>
             </div>
           </div>
         </div>
