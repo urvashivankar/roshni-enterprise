@@ -308,7 +308,7 @@ const Index = () => {
             <div className="relative h-full min-h-[500px] animate-fade-in hidden lg:block">
               <div className="absolute inset-0 bg-blue-900/5 rounded-3xl transform rotate-3"></div>
               <img
-                src="/technician.png"
+                src="/technician-new.jpg"
                 alt="Professional AC Technician"
                 className="relative w-full h-full object-cover rounded-3xl shadow-2xl hover:scale-[1.01] transition-transform duration-500"
               />
