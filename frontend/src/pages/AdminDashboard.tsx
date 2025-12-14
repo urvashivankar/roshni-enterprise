@@ -12,6 +12,14 @@ import {
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { LogOut, Calendar, Phone, MapPin, Wrench } from 'lucide-react';
 import { Badge } from "@/components/ui/badge";
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from "@/components/ui/select";
+import { useToast } from "@/components/ui/use-toast";
 
 interface Booking {
     _id: string;
@@ -21,12 +29,14 @@ interface Booking {
     date: string;
     time: string;
     area: string;
+    status: string;
     createdAt: string;
 }
 
 const AdminDashboard = () => {
     const [bookings, setBookings] = useState<Booking[]>([]);
     const navigate = useNavigate();
+    const { toast } = useToast();
 
     useEffect(() => {
         fetchBookings();
@@ -53,9 +63,50 @@ const AdminDashboard = () => {
         }
     };
 
+    const handleStatusUpdate = async (id: string, newStatus: string) => {
+        try {
+            const token = localStorage.getItem('token');
+            const response = await fetch(`/api/bookings/${id}/status`, {
+                method: 'PATCH',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                },
+                body: JSON.stringify({ status: newStatus })
+            });
+
+            if (response.ok) {
+                setBookings(bookings.map(b =>
+                    b._id === id ? { ...b, status: newStatus } : b
+                ));
+                toast({
+                    title: "Status Updated",
+                    description: `Booking status changed to ${newStatus}`,
+                });
+            } else {
+                throw new Error('Failed to update status');
+            }
+        } catch (error) {
+            toast({
+                title: "Error",
+                description: "Failed to update status",
+                variant: "destructive"
+            });
+        }
+    };
+
     const handleLogout = () => {
         localStorage.removeItem('token');
         navigate('/admin');
+    };
+
+    const getStatusColor = (status: string) => {
+        switch (status) {
+            case 'Confirmed': return 'bg-blue-100 text-blue-700 hover:bg-blue-200';
+            case 'Completed': return 'bg-green-100 text-green-700 hover:bg-green-200';
+            case 'Cancelled': return 'bg-red-100 text-red-700 hover:bg-red-200';
+            default: return 'bg-yellow-100 text-yellow-700 hover:bg-yellow-200';
+        }
     };
 
     return (
@@ -88,7 +139,20 @@ const AdminDashboard = () => {
                             <Wrench className="w-4 h-4 text-amber-100" />
                         </CardHeader>
                         <CardContent>
-                            <div className="text-3xl font-bold">{bookings.length}</div>
+                            <div className="text-3xl font-bold">
+                                {bookings.filter(b => b.status === 'Pending').length}
+                            </div>
+                        </CardContent>
+                    </Card>
+                    <Card className="bg-green-500 text-white">
+                        <CardHeader className="flex flex-row items-center justify-between pb-2">
+                            <CardTitle className="text-lg font-medium">Completed Jobs</CardTitle>
+                            <Wrench className="w-4 h-4 text-green-100" />
+                        </CardHeader>
+                        <CardContent>
+                            <div className="text-3xl font-bold">
+                                {bookings.filter(b => b.status === 'Completed').length}
+                            </div>
                         </CardContent>
                     </Card>
                 </div>
@@ -137,9 +201,20 @@ const AdminDashboard = () => {
                                                 </div>
                                             </TableCell>
                                             <TableCell>
-                                                <Badge className="bg-green-100 text-green-700 border-green-200 hover:bg-green-100">
-                                                    Pending
-                                                </Badge>
+                                                <Select
+                                                    defaultValue={booking.status || 'Pending'}
+                                                    onValueChange={(value) => handleStatusUpdate(booking._id, value)}
+                                                >
+                                                    <SelectTrigger className={`w-[140px] ${getStatusColor(booking.status || 'Pending')}`}>
+                                                        <SelectValue />
+                                                    </SelectTrigger>
+                                                    <SelectContent>
+                                                        <SelectItem value="Pending">Pending</SelectItem>
+                                                        <SelectItem value="Confirmed">Confirmed</SelectItem>
+                                                        <SelectItem value="Completed">Completed</SelectItem>
+                                                        <SelectItem value="Cancelled">Cancelled</SelectItem>
+                                                    </SelectContent>
+                                                </Select>
                                             </TableCell>
                                         </TableRow>
                                     ))}

@@ -22,7 +22,16 @@ const AdminLogin = () => {
                 body: JSON.stringify({ email, password })
             });
 
-            const data = await response.json();
+
+            const contentType = response.headers.get("content-type");
+            let data;
+            if (contentType && contentType.indexOf("application/json") !== -1) {
+                data = await response.json();
+            } else {
+                // If not JSON, it's likely a server error text or HTML
+                const text = await response.text();
+                throw new Error("Server returned non-JSON response: " + text.slice(0, 50));
+            }
 
             if (response.ok) {
                 localStorage.setItem('token', data.token);
@@ -34,10 +43,11 @@ const AdminLogin = () => {
                     variant: "destructive"
                 });
             }
-        } catch (error) {
+        } catch (error: any) {
+            console.error("Login error:", error);
             toast({
                 title: "Error",
-                description: "Something went wrong",
+                description: error.message || "Something went wrong",
                 variant: "destructive"
             });
         }

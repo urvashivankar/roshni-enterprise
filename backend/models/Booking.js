@@ -7,6 +7,7 @@ const bookingSchema = new mongoose.Schema({
     name: { type: String, required: true },
     phone: { type: String, required: true },
     area: { type: String, required: true },
+    status: { type: String, default: 'Pending', enum: ['Pending', 'Confirmed', 'Completed', 'Cancelled'] },
     createdAt: { type: Date, default: Date.now }
 });
 

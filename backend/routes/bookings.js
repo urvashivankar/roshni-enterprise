@@ -80,4 +80,22 @@ router.post('/', async (req, res) => {
     }
 });
 
+// Update booking status
+router.patch('/:id/status', auth, async (req, res) => {
+    try {
+        const { status } = req.body;
+        const booking = await Booking.findByIdAndUpdate(
+            req.params.id,
+            { status },
+            { new: true }
+        );
+        if (!booking) {
+            return res.status(404).json({ message: 'Booking not found' });
+        }
+        res.json(booking);
+    } catch (err) {
+        res.status(500).json({ message: err.message });
+    }
+});
+
 module.exports = router;
