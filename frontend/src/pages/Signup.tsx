@@ -70,11 +70,6 @@ const Signup = () => {
 
     return (
         <div className="min-h-screen flex items-center justify-center relative overflow-hidden bg-slate-900">
-            {/* Debug Info - Remove before final production */}
-            <div className="absolute top-0 left-0 bg-black/80 text-white p-2 text-xs z-50">
-                API URL: {getApiUrl('/api/auth/register')}
-            </div>
-
             {/* Background Image with Overlay */}
             <div className="absolute inset-0 z-0">
                 <img
