@@ -1,4 +1,6 @@
-export const API_BASE_URL = import.meta.env.VITE_API_URL || '';
+// Remove trailing slash if present to avoid double slashes
+const RAW_URL = import.meta.env.VITE_API_URL || '';
+export const API_BASE_URL = RAW_URL.endsWith('/') ? RAW_URL.slice(0, -1) : RAW_URL;
 
 export const getApiUrl = (endpoint: string) => {
     // Ensure endpoint starts with /
