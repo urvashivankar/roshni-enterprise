@@ -37,7 +37,15 @@ const Signup = () => {
                 body: JSON.stringify({ email, password })
             });
 
-            const data = await response.json();
+            const contentType = response.headers.get("content-type");
+            let data;
+            if (contentType && contentType.includes("application/json")) {
+                data = await response.json();
+            } else {
+                const text = await response.text();
+                console.error("Non-JSON response:", text);
+                throw new Error(`Server Error: ${response.status} ${response.statusText}. Check console for details.`);
+            }
 
             if (response.ok) {
                 localStorage.setItem('token', data.token);
@@ -62,6 +70,11 @@ const Signup = () => {
 
     return (
         <div className="min-h-screen flex items-center justify-center relative overflow-hidden bg-slate-900">
+            {/* Debug Info - Remove before final production */}
+            <div className="absolute top-0 left-0 bg-black/80 text-white p-2 text-xs z-50">
+                API URL: {getApiUrl('/api/auth/register')}
+            </div>
+
             {/* Background Image with Overlay */}
             <div className="absolute inset-0 z-0">
                 <img
