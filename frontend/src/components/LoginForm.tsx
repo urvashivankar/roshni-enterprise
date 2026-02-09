@@ -1,5 +1,7 @@
 
+import { getApiUrl } from "@/config";
 import { useState } from "react";
+// ... existing imports which are lines 3-12 in original file
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -26,8 +28,9 @@ export const LoginForm = () => {
     setIsLoading(true);
 
     try {
-      const response = await fetch('/api/auth/login', {
+      const response = await fetch(getApiUrl('/api/auth/login'), {
         method: 'POST',
+
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(formData)
       });

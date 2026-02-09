@@ -1,4 +1,4 @@
-
+import { getApiUrl } from "@/config";
 import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { Button } from "@/components/ui/button";
@@ -31,7 +31,7 @@ const Signup = () => {
 
         setIsLoading(true);
         try {
-            const response = await fetch('/api/auth/register', {
+            const response = await fetch(getApiUrl('/api/auth/register'), {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ email, password })
