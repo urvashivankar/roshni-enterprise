@@ -2,7 +2,7 @@
 
 **Roshni Enterprise** is more than just an AC service website; it's a **complete digital ecosystem** designed to make cooling comfort effortless for homes and businesses in Vadodara. 
 
-We blend **premium design** with **smart technology** to solve the common headaches of finding reliable AC service. No more endless phone calls or waiting in the dark—Roshni Enterprise brings professional cooling solutions to your fingertips.
+We blend **premium design** with **smart technology** to solve the common headaches of finding reliable AC service. No more endless phone calls or waiting in the dark Roshni Enterprise brings professional cooling solutions to your fingertips.
 
 
 ---
