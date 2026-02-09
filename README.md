@@ -1,126 +1,99 @@
-# ❄️ Roshni Enterprise - Next-Gen Cooling Solutions Platform
+# ❄️ Roshni Enterprise - The Future of Cooling Comfort
 
-**Roshni Enterprise** is a sophisticated, full-stack web application designed to modernize the HVAC service industry in Vadodara. It combines a premium, cinematic frontend with a powerful Admin Intelligence System for real-time business management.
+**Roshni Enterprise** is more than just an AC service website; it's a **complete digital ecosystem** designed to make cooling comfort effortless for homes and businesses in Vadodara. 
 
-![Roshni Enterprise](https://images.unsplash.com/photo-1621905251189-08b45d6a269e?q=80&w=2069&auto=format&fit=crop)
+We blend **premium design** with **smart technology** to solve the common headaches of finding reliable AC service. No more endless phone calls or waiting in the dark—Roshni Enterprise brings professional cooling solutions to your fingertips.
 
-## 🚀 Key Features
-
-### 🏢 Customer Experience
-- **Cinematic Landing Page**: High-performance React frontend with Framer Motion animations and glassmorphism UI.
-- **Instant Booking Engine**: "Uber-style" service booking with real-time status tracking.
-- **Corporate Inquiry System**: Specialized B2B portal for bulk maintenance (AMC) and institutional projects.
-- **Localized Content**: Vadodara-centric services with integrated Google Maps and direct contact hotlines.
-- **Mobile-First Design**: Fully responsive interface optimized for all devices.
-
-### 🧠 Admin Intelligence & Business Control
-- **Live Booking Command Center**: Real-time dashboard to manage bookings with one-click status updates (Pending → In Progress → Completed).
-- **Revenue Intelligence**: Visual analytics for daily/monthly revenue, service popularity, and average order value.
-- **Predictive Analytics**: Demand forecasting to identify peak hours and cancellation risk detection.
-- **Security & Audit**: Comprehensive audit logging for all admin actions with IP tracking and role-based access control.
-
-### 🔒 Security & Performance
-- **JWT Authentication**: Secure, token-based session management.
-- **Role-Based Access Control**: Strict separation between Customer and Admin portals.
-- **Data Encryption**: Secure password hashing and sensitive data handling.
+![Roshni Enterprise]()
 
 ---
 
-## 🛠️ Technology Stack
+##  Why Roshni Enterprise?
 
-### Frontend
-- **Framework**: React 18 (Vite)
-- **Styling**: Tailwind CSS, Shadcn UI
-- **Animations**: Framer Motion, CSS Keyframes
-- **State Management**: React Hooks (Context API)
-- **Visualization**: Recharts (Analytics & Trends)
+###  For Homeowners: Comfort on Demand
+- **Book in Seconds**: Schedule a repair, installation, or maintenance service in just 3 clicks.
+- **Track Your Expert**: See exactly when your technician is assigned and when the job is done—just like ordering a cab.
+- **Trusted Local Experts**: We connect you with top-rated, background-checked professionals in Vadodara.
+- **Transparent Pricing**: Get estimated costs upfront. No hidden surprises.
 
-### Backend
-- **Runtime**: Node.js
-- **Framework**: Express.js
-- **Database**: MongoDB Atlas (Mongoose)
-- **Auth**: JSON Web Tokens (JWT), Bcrypt
+###  For Businesses: Corporate Cooling Management
+- **Bulk Service Solutions**: Easily manage AC maintenance for entire office buildings or factories.
+- **GST-Ready Invoicing**: Automated, professional billing for seamless accounting.
+- **Dedicated Account Manager**: Priority support for our corporate partners.
 
-### DevOps & Tools
-- **Version Control**: Git & GitHub
-- **API Testing**: Postman / Thunder Client
-- **Linting**: ESLint
+###  For Management: Smarter Business Control
+- **Live Command Center**: A "Mission Control" dashboard that shows every booking in real-time.
+- **Predictive Intelligence**: The system studies booking patterns to predict high-demand days, helping us prepare in advance.
+- **Revenue at a Glance**: Instant financial reports and service popularity charts to help the business grow.
 
 ---
 
-## 🔧 Installation & Setup
+##  Key Features at a Glance
 
-1.  **Clone the Repository**
+| Feature | What it does for you |
+| :--- | :--- |
+| **Instant Booking Engine** | Lets you pick a service, date, and time that works for *you*. |
+| **Real-Time Status** | Updates you via the dashboard: *Pending → In Progress → Completed*. |
+| **Cinematic Experience** | A beautiful, smooth website that feels premium and easy to use. |
+| **Secure Client Portal** | A private dashboard to view your history, invoices, and rate services. |
+| **Admin Command Center** | Gives admins full control to assign techs and manage jobs instantly. |
+
+---
+
+## Built With Modern Tech
+
+We use the latest technology to ensure the platform is fast, secure, and reliable.
+
+- **Frontend (The Look)**: React 18, Tailwind CSS, Framer Motion (for smooth animations).
+- **Backend (The Brain)**: Node.js, Express.js, MongoDB (to safely store data).
+- **Security (The Shield)**: JWT Authentication & BCrypt (to keep your data safe).
+
+---
+
+##  How to Run This Project
+
+If you are a developer and want to run Roshni Enterprise on your own machine:
+
+1.  **Clone the Code**
     ```bash
     git clone https://github.com/urvashivankar/roshni-enterprise.git
     cd roshni-enterprise
     ```
 
-2.  **Install Dependencies**
+2.  **Install the Tools**
     ```bash
-    # Install Backend Dependencies
+    # Install Backend tools
     cd backend
     npm install
 
-    # Install Frontend Dependencies
+    # Install Frontend tools
     cd ../frontend
     npm install
     ```
 
-3.  **Environment Configuration**
-    Create a `.env` file in the `backend` directory:
-    ```env
-    PORT=5000
-    MONGO_URI=your_mongodb_connection_string
-    JWT_SECRET=your_secure_jwt_secret
-    ```
-
-4.  **Run the Application**
+3.  **Start the Engines**
     ```bash
-    # Terminal 1: Start Backend Server
+    # Terminal 1: Start the Backend
     cd backend
     npm start
 
-    # Terminal 2: Start Frontend Development Server
+    # Terminal 2: Start the Frontend
     cd frontend
     npm run dev
     ```
 
-5.  **Access the App**
-    - **Client Portal**: `http://localhost:8080`
-    - **Admin Portal**: `http://localhost:8080/admin/login`
+4.  **Explore!**
+    - Visit `http://localhost:8080` to see the Customer view.
+    - Visit `http://localhost:8080/admin/login` to see the Admin view.
 
 ---
 
-## 📁 Project Structure
+##  Project Structure
 
-```
-roshni-enterprise/
-├── backend/                # Node.js + Express API
-│   ├── config/             # Database configuration
-│   ├── models/             # Mongoose Schemas (User, Booking, Analytics)
-│   ├── routes/             # API Endpoints (Auth, Bookings, Analytics)
-│   └── utils/              # Helper functions (Sync, Logger)
-│
-├── frontend/               # React + Vite Application
-│   ├── src/
-│   │   ├── components/     # Reusable UI components (Cards, Modals)
-│   │   ├── pages/          # Application Pages (Home, Dashboard, Admin)
-│   │   ├── lib/            # Utilities
-│   │   └── assets/         # Images and static files
-│   └── public/             # Static public assets
-```
+- **frontend/**: All the visual parts of the website (pages, buttons, animations).
+- **backend/**: The server that handles bookings, emails, and database connections.
+- **models/**: Defines how we store data for Users, Bookings, and Analytics.
 
 ---
-
-## 👥 Contributors
-
-- **Urvashi Vankar** - Lead Developer & Architect
-
----
-
-## 📄 License
-
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
 © 2026 Roshni Enterprise. All rights reserved.
