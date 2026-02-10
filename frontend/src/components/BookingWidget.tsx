@@ -1,4 +1,5 @@
 
+import { getApiUrl } from "@/config";
 import { useState, useRef } from "react";
 import { Calendar as CalendarIcon, Clock, User, Phone, MapPin, Wrench, CheckCircle2, Zap } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
@@ -92,7 +93,10 @@ export const BookingWidget = ({ initialService }: { initialService?: string }) =
 
     try {
       const token = localStorage.getItem('token');
-      const response = await fetch('/api/bookings', {
+      // Use getApiUrl to ensure we hit the correct backend (Render)
+      const apiUrl = getApiUrl('/api/bookings');
+
+      const response = await fetch(apiUrl, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -111,18 +115,17 @@ export const BookingWidget = ({ initialService }: { initialService?: string }) =
       if (response.ok) {
         setIsDialogOpen(true);
       } else {
+        // Robust error handling for non-JSON responses (HTML 404s etc)
+        const contentType = response.headers.get("content-type");
         let errorMessage = 'Failed to submit booking';
-        try {
-          const contentType = response.headers.get("content-type");
-          if (contentType && contentType.includes("application/json")) {
-            const errorData = await response.json();
-            errorMessage = errorData.message || errorMessage;
-          } else {
-            const text = await response.text();
-            console.error('Non-JSON error response:', text);
-          }
-        } catch (e) {
-          console.error('Error parsing error response:', e);
+
+        if (contentType && contentType.includes("application/json")) {
+          const errorData = await response.json();
+          errorMessage = errorData.message || errorMessage;
+        } else {
+          const text = await response.text();
+          console.error('Server error (non-JSON):', text);
+          errorMessage = "Server unreachable or internal error.";
         }
         throw new Error(errorMessage);
       }
