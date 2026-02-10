@@ -1,8 +1,9 @@
 import { io, Socket } from 'socket.io-client';
 
-// Use the environment variable, but fallback to relative path if not set (for proxy)
-// However, for sockets, we usually need the absolute URL if backend is on a different domain.
-const SOCKET_URL = import.meta.env.VITE_API_URL || (import.meta.env.PROD ? '' : 'http://localhost:5000');
+// Use the environment variable, or fallback to the hardcoded Render URL for production safety
+const PROD_URL = 'https://roshni-enterprise-backend.onrender.com';
+const SOCKET_URL = import.meta.env.VITE_API_URL || (import.meta.env.MODE === 'production' ? PROD_URL : 'http://localhost:5000');
+
 
 console.log('Connecting to socket at:', SOCKET_URL);
 
