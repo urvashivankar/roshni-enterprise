@@ -4,7 +4,7 @@
 
 ---
 
-## 🚀 Key Features
+##  Key Features
 
 ### For Customers
 *   **Instant Booking Engine**: Schedule repairs, installations, or maintenance in seconds.
@@ -21,7 +21,7 @@
 
 ---
 
-## 🛠️ Technology Stack
+##  Technology Stack
 
 Built with a focus on performance, security, and scalability.
 
@@ -32,7 +32,7 @@ Built with a focus on performance, security, and scalability.
 
 ---
 
-## 💻 Local Developement Setup
+##  Local Developement Setup
 
 Prerequisites: Node.js (v18+) and MongoDB installed locally or an Atlas URI.
 
@@ -58,23 +58,8 @@ Prerequisites: Node.js (v18+) and MongoDB installed locally or an Atlas URI.
     npm run dev
     ```
 
-4.  **Access the App**
-    *   Customer Portal: `http://localhost:5173`
-    *   Admin Portal: `http://localhost:5173/admin`
 
----
-
-## 🌍 Deployment
-
-This project is production-ready.
-*   **Frontend**: Optimized for Vercel/Netlify.
-*   **Backend**: Ready for Render/Railway/Heroku.
-
-👉 **See `deployment_guide.md` for detailed, step-by-step deployment instructions.**
-
----
-
-## 📂 Project Structure
+##  Project Structure
 
 *   `frontend/`: React application with distinct `pages/`, `components/`, and `hooks/`.
 *   `backend/`: Express server with `routes/`, `models/`, `middleware/`, and `controllers/`.
