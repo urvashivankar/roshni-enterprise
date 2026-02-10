@@ -20,18 +20,29 @@ const corsOptions = {
             'https://cooling-comfort-connect.vercel.app',
             'https://roshni-enterprise.vercel.app'
         ];
-        if (!origin || allowedOrigins.indexOf(origin) !== -1 || origin.endsWith('.vercel.app')) {
+        // Allow requests with no origin (like mobile apps or curl requests)
+        if (!origin) return callback(null, true);
+
+        if (allowedOrigins.indexOf(origin) !== -1 || origin.endsWith('.vercel.app')) {
             callback(null, true);
         } else {
+            console.log('Blocked by CORS:', origin); // Log blocked origins for debugging
             callback(new Error('Not allowed by CORS'));
         }
     },
+    methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'Accept'],
     credentials: true,
     optionsSuccessStatus: 200
 };
 
 const io = new Server(server, {
-    cors: corsOptions
+    cors: {
+        ...corsOptions,
+        methods: ["GET", "POST"],
+        credentials: true
+    },
+    transports: ['websocket', 'polling']
 });
 
 // Store io in app to use in routes

@@ -94,7 +94,15 @@ export const CorporateInquiryForm = ({ isOpen, onClose }: { isOpen: boolean; onC
                 setIsSuccessOpen(true);
                 onClose();
             } else {
-                throw new Error("Failed to submit lead");
+                const contentType = response.headers.get("content-type");
+                if (contentType && contentType.includes("application/json")) {
+                    const err = await response.json();
+                    throw new Error(err.message || "Failed to submit lead");
+                } else {
+                    const text = await response.text();
+                    console.error("Non-JSON error:", text);
+                    throw new Error("Server error. Please try again later.");
+                }
             }
         } catch (error) {
             toast({

@@ -60,6 +60,14 @@ const MyBookings = () => {
                 setBookings(data);
             } else if (response.status === 401) {
                 handleLogout();
+            } else {
+                // Determine if response is JSON or text to avoid crash
+                const contentType = response.headers.get("content-type");
+                if (contentType && contentType.includes("application/json")) {
+                    console.error('Failed to fetch bookings', await response.json());
+                } else {
+                    console.error('Failed to fetch bookings (non-JSON):', await response.text());
+                }
             }
         } catch (error) {
             console.error('Failed to fetch bookings', error);
