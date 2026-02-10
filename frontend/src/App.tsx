@@ -7,7 +7,6 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Index from "./pages/Index";
 import Login from "./pages/Login"; // Existing login, keeping it if used for other purposes, or we can replace it.
 import AdminLogin from "./pages/AdminLogin";
-import AdminDashboard from "./pages/AdminDashboard";
 import AdminCommandCenter from "./pages/AdminCommandCenter";
 import AdminRevenue from "./pages/AdminRevenue";
 import AdminAnalytics from "./pages/AdminAnalytics";
@@ -43,7 +42,7 @@ const App = () => (
             path="/admin/dashboard"
             element={
               <ProtectedRoute>
-                <AdminDashboard />
+                <AdminCommandCenter />
               </ProtectedRoute>
             }
           />

@@ -9,12 +9,14 @@ const auth = require('../middleware/auth');
 // @desc    Register user (Admin only or initial setup)
 // @access  Public (for now, to seed admin)
 router.post('/register', async (req, res) => {
+    console.time(`Register: ${req.body.email}`);
     const { email, password } = req.body;
 
     try {
         let user = await User.findOne({ email });
 
         if (user) {
+            console.timeEnd(`Register: ${req.body.email}`);
             return res.status(400).json({ message: 'User already exists' });
         }
 
@@ -40,11 +42,13 @@ router.post('/register', async (req, res) => {
             { expiresIn: '5d' },
             (err, token) => {
                 if (err) throw err;
+                console.timeEnd(`Register: ${req.body.email}`);
                 res.json({ token });
             }
         );
     } catch (err) {
         console.error(err.message);
+        console.timeEnd(`Register: ${req.body.email}`);
         res.status(500).json({ message: 'Server error' });
     }
 });
@@ -53,18 +57,21 @@ router.post('/register', async (req, res) => {
 // @desc    Authenticate user & get token
 // @access  Public
 router.post('/login', async (req, res) => {
+    console.time(`Login: ${req.body.email}`);
     const { email, password } = req.body;
 
     try {
         let user = await User.findOne({ email });
 
         if (!user) {
+            console.timeEnd(`Login: ${req.body.email}`);
             return res.status(400).json({ message: 'Invalid Credentials' });
         }
 
         const isMatch = await bcrypt.compare(password, user.password);
 
         if (!isMatch) {
+            console.timeEnd(`Login: ${req.body.email}`);
             return res.status(400).json({ message: 'Invalid Credentials' });
         }
 
@@ -81,11 +88,13 @@ router.post('/login', async (req, res) => {
             { expiresIn: '5d' },
             (err, token) => {
                 if (err) throw err;
+                console.timeEnd(`Login: ${req.body.email}`);
                 res.json({ token });
             }
         );
     } catch (err) {
         console.error(err.message);
+        console.timeEnd(`Login: ${req.body.email}`);
         res.status(500).json({ message: 'Server error' });
     }
 });

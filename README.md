@@ -1,97 +1,84 @@
 # ❄️ Roshni Enterprise - The Future of Cooling Comfort
 
-**Roshni Enterprise** is more than just an AC service website; it's a **complete digital ecosystem** designed to make cooling comfort effortless for homes and businesses in Vadodara. 
-
-We blend **premium design** with **smart technology** to solve the common headaches of finding reliable AC service. No more endless phone calls or waiting in the dark Roshni Enterprise brings professional cooling solutions to your fingertips.
-
+**Roshni Enterprise** is a comprehensive digital ecosystem designed to revolutionize AC service management in Vadodara. Bridging the gap between customers and service professionals, we offer a seamless, premium experience for booking, tracking, and managing air conditioning services.
 
 ---
 
-##  Why Roshni Enterprise?
+## 🚀 Key Features
 
-###  For Homeowners: Comfort on Demand
-- **Book in Seconds**: Schedule a repair, installation, or maintenance service in just 3 clicks.
-- **Track Your Expert**: See exactly when your technician is assigned and when the job is done—just like ordering a cab.
-- **Trusted Local Experts**: We connect you with top-rated, background-checked professionals in Vadodara.
-- **Transparent Pricing**: Get estimated costs upfront. No hidden surprises.
+### For Customers
+*   **Instant Booking Engine**: Schedule repairs, installations, or maintenance in seconds.
+*   **Real-Time Tracking**: Monitor service status from *Pending* to *Completed* via a personal dashboard.
+*   **Transparent Pricing**: Clear service bundles and estimates with no hidden costs.
+*   **Corporate Portals**: Specialized inquiry forms and management for B2B clients.
 
-###  For Businesses: Corporate Cooling Management
-- **Bulk Service Solutions**: Easily manage AC maintenance for entire office buildings or factories.
-- **GST-Ready Invoicing**: Automated, professional billing for seamless accounting.
-- **Dedicated Account Manager**: Priority support for our corporate partners.
-
-###  For Management: Smarter Business Control
-- **Live Command Center**: A "Mission Control" dashboard that shows every booking in real-time.
-- **Predictive Intelligence**: The system studies booking patterns to predict high-demand days, helping us prepare in advance.
-- **Revenue at a Glance**: Instant financial reports and service popularity charts to help the business grow.
+### For Administrators (Command Center)
+*   **Live Operations Dashboard**: value-packed "Mission Control" view of all active bookings.
+*   **Role-Based Access Control (RBAC)**: Secure, tiered access ensuring data privacy and operational integrity.
+*   **Real-Time Updates**: Instant notifications for new bookings and status changes via Socket.io.
+*   **Revenue Intelligence**: Visual analytics for financial performance and service trends.
+*   **Skeleton Loading UI**: Premium, shimmer-effect loading states for a polished user experience.
 
 ---
 
-##  Key Features at a Glance
+## 🛠️ Technology Stack
 
-| Feature | What it does for you |
-| :--- | :--- |
-| **Instant Booking Engine** | Lets you pick a service, date, and time that works for *you*. |
-| **Real-Time Status** | Updates you via the dashboard: *Pending → In Progress → Completed*. |
-| **Cinematic Experience** | A beautiful, smooth website that feels premium and easy to use. |
-| **Secure Client Portal** | A private dashboard to view your history, invoices, and rate services. |
-| **Admin Command Center** | Gives admins full control to assign techs and manage jobs instantly. |
+Built with a focus on performance, security, and scalability.
 
----
-
-## Built With Modern Tech
-
-We use the latest technology to ensure the platform is fast, secure, and reliable.
-
-- **Frontend (The Look)**: React 18, Tailwind CSS, Framer Motion (for smooth animations).
-- **Backend (The Brain)**: Node.js, Express.js, MongoDB (to safely store data).
-- **Security (The Shield)**: JWT Authentication & BCrypt (to keep your data safe).
+*   **Frontend**: React 18, TypeScript, Tailwind CSS, Shadcn UI, Framer Motion, TanStack Query.
+*   **Backend**: Node.js, Express.js, Socket.io (Real-time).
+*   **Database**: MongoDB (Atlas ready).
+*   **Security**: JWT Authentication, BCrypt password hashing, RBAC middleware.
 
 ---
 
-##  How to Run This Project
+## 💻 Local Developement Setup
 
-If you are a developer and want to run Roshni Enterprise on your own machine:
+Prerequisites: Node.js (v18+) and MongoDB installed locally or an Atlas URI.
 
-1.  **Clone the Code**
+1.  **Clone the Repository**
     ```bash
     git clone https://github.com/urvashivankar/roshni-enterprise.git
     cd roshni-enterprise
     ```
 
-2.  **Install the Tools**
+2.  **Backend Setup**
     ```bash
-    # Install Backend tools
     cd backend
     npm install
-
-    # Install Frontend tools
-    cd ../frontend
-    npm install
-    ```
-
-3.  **Start the Engines**
-    ```bash
-    # Terminal 1: Start the Backend
-    cd backend
-    npm start
-
-    # Terminal 2: Start the Frontend
-    cd frontend
+    # Create .env file based on .env.example
+    # npm run seed (Optional: Seed initial admin user)
     npm run dev
     ```
 
-4.  **Explore!**
-    - Visit `http://localhost:8080` to see the Customer view.
-    - Visit `http://localhost:8080/admin/login` to see the Admin view.
+3.  **Frontend Setup**
+    ```bash
+    cd frontend
+    npm install
+    npm run dev
+    ```
+
+4.  **Access the App**
+    *   Customer Portal: `http://localhost:5173`
+    *   Admin Portal: `http://localhost:5173/admin`
 
 ---
 
-##  Project Structure
+## 🌍 Deployment
 
-- **frontend/**: All the visual parts of the website (pages, buttons, animations).
-- **backend/**: The server that handles bookings, emails, and database connections.
-- **models/**: Defines how we store data for Users, Bookings, and Analytics.
+This project is production-ready.
+*   **Frontend**: Optimized for Vercel/Netlify.
+*   **Backend**: Ready for Render/Railway/Heroku.
+
+👉 **See `deployment_guide.md` for detailed, step-by-step deployment instructions.**
+
+---
+
+## 📂 Project Structure
+
+*   `frontend/`: React application with distinct `pages/`, `components/`, and `hooks/`.
+*   `backend/`: Express server with `routes/`, `models/`, `middleware/`, and `controllers/`.
+*   `backend/middleware/admin.js`: RBAC implementation.
 
 ---
 

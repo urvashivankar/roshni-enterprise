@@ -1,10 +1,50 @@
 const express = require('express');
+const http = require('http');
+const { Server } = require('socket.io');
 const mongoose = require('mongoose');
 const cors = require('cors');
+const path = require('path');
 require('dotenv').config();
 
 const app = express();
+const server = http.createServer(app);
 const PORT = process.env.PORT || 5000;
+
+// ... CORS Configuration and socket.io setup which are lines 10-50 in original file
+const corsOptions = {
+    origin: (origin, callback) => {
+        const allowedOrigins = [
+            'http://localhost:8080',
+            'http://localhost:5173',
+            'http://localhost:3000',
+            'https://cooling-comfort-connect.vercel.app',
+            'https://roshni-enterprise.vercel.app'
+        ];
+        if (!origin || allowedOrigins.indexOf(origin) !== -1 || origin.endsWith('.vercel.app')) {
+            callback(null, true);
+        } else {
+            callback(new Error('Not allowed by CORS'));
+        }
+    },
+    credentials: true,
+    optionsSuccessStatus: 200
+};
+
+const io = new Server(server, {
+    cors: corsOptions
+});
+
+// Store io in app to use in routes
+app.set('io', io);
+
+// Socket.io connection handling
+io.on('connection', (socket) => {
+    console.log('A user connected:', socket.id);
+
+    socket.on('disconnect', () => {
+        console.log('User disconnected:', socket.id);
+    });
+});
 
 const authRoutes = require('./routes/auth');
 const bookingRoutes = require('./routes/bookings');
@@ -22,33 +62,11 @@ if (missingEnvVars.length > 0) {
     process.exit(1);
 }
 
-// CORS Configuration
-const corsOptions = {
-    origin: (origin, callback) => {
-        const allowedOrigins = [
-            'http://localhost:8080',
-            'http://localhost:5173',
-            'http://localhost:3000',
-            'https://cooling-comfort-connect.vercel.app', // Add your production domain here
-            'https://roshni-enterprise.vercel.app'
-        ];
-
-        // Allow requests with no origin (like mobile apps or curl requests)
-        // or if original origin is in local allowed list
-        if (!origin || allowedOrigins.indexOf(origin) !== -1 || origin.endsWith('.vercel.app')) {
-            callback(null, true);
-        } else {
-            callback(new Error('Not allowed by CORS'));
-        }
-    },
-    credentials: true,
-    optionsSuccessStatus: 200
-};
-
 // Middleware
 app.use(cors(corsOptions));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
 // Request logging in development
 if (process.env.NODE_ENV !== 'production') {
@@ -88,13 +106,12 @@ app.get('/api/health', (req, res) => {
 // Basic Route
 app.get('/', (req, res) => {
     res.json({
-        message: 'Roshni Enterprise API',
-        version: '1.0.0',
+        message: 'Roshni Enterprise API with Real-time support',
+        version: '1.1.0',
         endpoints: {
             health: '/api/health',
             bookings: '/api/bookings',
-            auth: '/api/auth',
-            reviews: '/api/reviews'
+            auth: '/api/auth'
         }
     });
 });
@@ -111,21 +128,16 @@ app.use(errorHandler);
 let isConnected = false;
 
 const connectDB = async () => {
-    if (isConnected) {
-        console.log('Using existing database connection');
-        return;
-    }
+    if (isConnected) return;
 
     try {
-        const options = {
-            serverSelectionTimeoutMS: 5000,
-            socketTimeoutMS: 45000,
-        };
-
         const uri = process.env.MONGO_URI;
         if (!uri) throw new Error('MONGO_URI is not defined');
 
-        await mongoose.connect(uri, options);
+        await mongoose.connect(uri, {
+            serverSelectionTimeoutMS: 5000,
+            socketTimeoutMS: 45000,
+        });
         isConnected = true;
         console.log('MongoDB connected successfully');
     } catch (err) {
@@ -137,26 +149,13 @@ const connectDB = async () => {
 // Initialize database connection
 connectDB().catch(err => {
     console.error('Failed to connect to database:', err);
-    console.log('⚠️  Server will continue without MongoDB. Admin fallback login is available.');
-    // Don't exit - allow server to run with fallback admin login
-});
-
-// Handle MongoDB connection events
-mongoose.connection.on('disconnected', () => {
-    console.log('MongoDB disconnected');
-    isConnected = false;
-});
-
-mongoose.connection.on('error', (err) => {
-    console.error('MongoDB error:', err);
-    isConnected = false;
 });
 
 // Graceful shutdown
 process.on('SIGINT', async () => {
     try {
         await mongoose.connection.close();
-        console.log('MongoDB connection closed through app termination');
+        console.log('MongoDB connection closed');
         process.exit(0);
     } catch (err) {
         console.error('Error during graceful shutdown:', err);
@@ -164,13 +163,12 @@ process.on('SIGINT', async () => {
     }
 });
 
-// Export the app for Vercel serverless
+// Export the app for Vercel serverless (Vercel won't support WebSockets on free tier though)
 module.exports = app;
 
-// Start Server only if running directly (not in Vercel)
+// Start Server only if running directly
 if (require.main === module) {
-    app.listen(PORT, () => {
-        console.log(`Server is running on port ${PORT}`);
-        console.log(`Environment: ${process.env.NODE_ENV || 'development'}`);
+    server.listen(PORT, () => {
+        console.log(`Real-time server is running on port ${PORT}`);
     });
 }

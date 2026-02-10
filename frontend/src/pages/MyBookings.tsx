@@ -1,19 +1,13 @@
 
 import { useEffect, useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
+import { getApiUrl } from "@/config";
 import BrandLogo from '@/components/BrandLogo';
 import { Button } from "@/components/ui/button";
-import { Card, CardHeader, CardTitle, CardContent, CardDescription } from "@/components/ui/card";
-import {
-    Table,
-    TableBody,
-    TableCell,
-    TableHead,
-    TableHeader,
-    TableRow
-} from "@/components/ui/table";
+import { Card, CardContent } from "@/components/ui/card";
 import { LogOut, Calendar, MapPin, Clock, Wrench, ChevronLeft, LayoutDashboard, Loader2, Phone, Star, FileText } from 'lucide-react';
 import { Badge } from "@/components/ui/badge";
+import { Skeleton } from "@/components/ui/skeleton";
 import { useToast } from "@/components/ui/use-toast";
 import {
     Dialog,
@@ -56,7 +50,7 @@ const MyBookings = () => {
     const fetchMyBookings = async () => {
         try {
             const token = localStorage.getItem('token');
-            const response = await fetch('/api/bookings/my-bookings', {
+            const response = await fetch(getApiUrl('/api/bookings/my-bookings'), {
                 headers: {
                     'Authorization': `Bearer ${token}`
                 }
@@ -84,7 +78,7 @@ const MyBookings = () => {
         setSubmitting(true);
         try {
             const token = localStorage.getItem('token');
-            const response = await fetch('/api/reviews', {
+            const response = await fetch(getApiUrl('/api/reviews'), {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -124,15 +118,6 @@ const MyBookings = () => {
         }
     };
 
-    const getStatusVariant = (status: string) => {
-        switch (status) {
-            case 'Confirmed': return 'secondary';
-            case 'Completed': return 'default';
-            case 'Cancelled': return 'destructive';
-            default: return 'outline';
-        }
-    };
-
     return (
         <div className="min-h-screen bg-slate-50 font-sans">
             {/* Header / Nav */}
@@ -158,11 +143,18 @@ const MyBookings = () => {
                             <LayoutDashboard className="w-4 h-4" />
                             <span>Dashboard</span>
                         </div>
-                        <h1 className="text-3xl font-bold text-slate-900">Your Bookings</h1>
-                        <p className="text-slate-500">Track the status of your cooling requests</p>
+                        <h1 className="text-3xl font-bold text-slate-900">Your Activities</h1>
+                        <p className="text-slate-500">Track and manage your cooling requests</p>
+                    </div>
+                </div>
+
+                <div className="flex gap-4 mb-10 overflow-x-auto pb-2">
+                    <div className="bg-blue-600 text-white shadow-xl shadow-blue-600/20 px-8 py-3 rounded-2xl font-bold text-sm flex items-center">
+                        <Wrench className="w-4 h-4 mr-2" />
+                        Service Bookings ({bookings.length})
                     </div>
                     <Link to="/#booking">
-                        <Button className="bg-blue-600 hover:bg-blue-700 text-white rounded-xl h-12 px-6">
+                        <Button className="bg-blue-600 hover:bg-blue-700 text-white rounded-xl h-12 px-6 shadow-md transition-all active:scale-95">
                             <Wrench className="w-4 h-4 mr-2" />
                             Book New Service
                         </Button>
@@ -170,12 +162,53 @@ const MyBookings = () => {
                 </div>
 
                 {isLoading ? (
-                    <div className="flex flex-col items-center justify-center py-24 space-y-6">
-                        <div className="relative">
-                            <div className="w-16 h-16 border-4 border-blue-100 border-t-blue-600 rounded-full animate-spin"></div>
-                            <Wrench className="w-6 h-6 text-blue-600 absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2" />
+                    <div className="grid lg:grid-cols-3 gap-8">
+                        <div className="lg:col-span-2 space-y-6">
+                            {[1, 2, 3].map((i) => (
+                                <div key={i} className="bg-white border border-slate-100 shadow-sm rounded-[2rem] p-8 space-y-8">
+                                    <div className="flex justify-between items-start">
+                                        <div className="space-y-2">
+                                            <Skeleton className="h-6 w-24 rounded-lg" />
+                                            <Skeleton className="h-8 w-48 rounded-lg" />
+                                        </div>
+                                        <div className="flex flex-col items-end gap-2">
+                                            <Skeleton className="h-6 w-24 rounded-full" />
+                                            <Skeleton className="h-4 w-16" />
+                                        </div>
+                                    </div>
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-8 py-8 border-y border-slate-50">
+                                        <div className="flex items-center gap-4">
+                                            <Skeleton className="w-12 h-12 rounded-2xl" />
+                                            <div className="space-y-2">
+                                                <Skeleton className="h-3 w-16" />
+                                                <Skeleton className="h-6 w-32" />
+                                            </div>
+                                        </div>
+                                        <div className="flex items-center gap-4">
+                                            <Skeleton className="w-12 h-12 rounded-2xl" />
+                                            <div className="space-y-2">
+                                                <Skeleton className="h-3 w-16" />
+                                                <Skeleton className="h-6 w-32" />
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div className="flex justify-between items-center mt-8">
+                                        <div className="flex items-center gap-3">
+                                            <Skeleton className="w-8 h-8 rounded-full" />
+                                            <Skeleton className="h-4 w-32" />
+                                        </div>
+                                        <div className="flex gap-2">
+                                            <Skeleton className="h-10 w-32 rounded-xl" />
+                                        </div>
+                                    </div>
+                                </div>
+                            ))}
                         </div>
-                        <p className="text-slate-500 font-bold uppercase tracking-widest text-xs">Synchronizing your history...</p>
+                        {/* Sidebar Skeleton */}
+                        <div className="space-y-6 hidden lg:block">
+                            <Skeleton className="h-64 w-full rounded-[2rem]" />
+                            <Skeleton className="h-48 w-full rounded-[2rem]" />
+                        </div>
                     </div>
                 ) : bookings.length > 0 ? (
                     <div className="grid lg:grid-cols-3 gap-8">
@@ -192,7 +225,7 @@ const MyBookings = () => {
                                             </div>
                                             <div className="flex flex-col items-end gap-2">
                                                 <Badge
-                                                    variant={getStatusVariant(booking.status) as any}
+                                                    variant={getStatusBadgeVariant(booking.status)}
                                                     className={`px-4 py-1.5 rounded-full text-xs font-bold uppercase tracking-wider ${booking.status === 'Pending' ? 'bg-amber-100 text-amber-700 border-amber-200' :
                                                         booking.status === 'Confirmed' ? 'bg-blue-100 text-blue-700 border-blue-200' :
                                                             'bg-emerald-100 text-emerald-700 border-emerald-200'
@@ -387,7 +420,6 @@ const MyBookings = () => {
                 </DialogContent>
             </Dialog>
 
-            {/* Invoice Details Modal */}
             <Dialog open={isInvoiceModalOpen} onOpenChange={setIsInvoiceModalOpen}>
                 <DialogContent className="sm:max-w-md rounded-[2rem] border-none shadow-2xl p-8">
                     <DialogHeader className="space-y-4">
@@ -421,10 +453,14 @@ const MyBookings = () => {
 
                             <div className="pt-2">
                                 <div className="flex justify-between items-center text-lg font-black text-slate-900">
-                                    <span>Estimated Cost</span>
-                                    <span>₹999.00</span>
+                                    <span>{selectedBooking && ["Annual Maintenance", "Custom"].includes(selectedBooking.service) ? "Quotation" : "Estimated Cost"}</span>
+                                    <span>{selectedBooking ? getServicePrice(selectedBooking.service) : "₹499"}.00</span>
                                 </div>
-                                <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest mt-1">* Final amount depends on service complexity</p>
+                                <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest mt-1">
+                                    {selectedBooking?.service === "Annual Maintenance"
+                                        ? "* Final price quoted after physical inspection"
+                                        : "* Price shown is the base rate. Final amount depends on service complexity"}
+                                </p>
                             </div>
                         </div>
                     </div>
@@ -442,6 +478,35 @@ const MyBookings = () => {
 
         </div>
     );
+};
+
+const getStatusBadgeVariant = (status: string): any => {
+    switch (status) {
+        case 'Confirmed': return 'secondary';
+        case 'Completed': return 'default';
+        case 'Cancelled': return 'destructive';
+        default: return 'outline';
+    }
+};
+
+const getServicePrice = (service: string) => {
+    const prices: Record<string, string> = {
+        "Lite Refresh Service": "₹499",
+        "Power Boost Deep Clean (Split)": "₹499",
+        "Power Boost Deep Clean (Window)": "₹449",
+        "Foam Guard Deep Clean (Split)": "₹599",
+        "Foam Guard Deep Clean (Window)": "₹649",
+        "RustShield Protection Clean": "₹1,049",
+        "Smart AC Repair": "₹299",
+        "Complete Gas Health Check": "₹2,700",
+        "Precision AC Installation": "₹499",
+        "Safe AC Uninstallation": "₹649",
+        "2 AC Saver Foam-Jet": "₹1,098",
+        "5 AC Saver Foam-Jet": "₹2,595",
+        "Annual Maintenance (AMC)": "₹999",
+        "Gas Charging": "₹2,700"
+    };
+    return prices[service] || "₹499";
 };
 
 export default MyBookings;

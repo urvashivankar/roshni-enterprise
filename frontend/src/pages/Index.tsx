@@ -8,6 +8,7 @@ import { Badge } from "@/components/ui/badge";
 import { PricingSection } from "@/components/PricingSection";
 import { BookingWidget } from "@/components/BookingWidget";
 import { CorporateInquiryForm } from "@/components/CorporateInquiryForm";
+import socket from "@/lib/socket";
 
 const CountUp = ({ end, duration = 2000, suffix = "" }: { end: string, duration?: number, suffix?: string }) => {
   const [count, setCount] = useState(0);
@@ -56,70 +57,120 @@ const CountUp = ({ end, duration = 2000, suffix = "" }: { end: string, duration?
   return <span ref={nodeRef}>{count}{suffix}</span>;
 };
 
+interface Testimonial {
+  name: string;
+  location: string;
+  rating: number;
+  comment: string;
+}
+
 const Index = () => {
   const [currentTestimonial, setCurrentTestimonial] = useState(0);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [isCorporateModalOpen, setIsCorporateModalOpen] = useState(false);
+  const [reviews, setReviews] = useState<Testimonial[]>([]);
+  const [preSelectedService, setPreSelectedService] = useState<string | undefined>(undefined);
 
   useEffect(() => {
     setIsLoggedIn(!!localStorage.getItem('token'));
+    fetchReviews();
+
+    // Listen for new reviews
+    socket.on('newReview', (newReview: any) => {
+      console.log('Real-time: New review received', newReview);
+      setReviews(prev => [
+        {
+          name: newReview.userName,
+          location: "Vadodara",
+          rating: newReview.rating,
+          comment: newReview.comment
+        },
+        ...prev.slice(0, 9)
+      ]);
+    });
+
+    return () => {
+      socket.off('newReview');
+    };
   }, []);
+
+  const fetchReviews = async () => {
+    try {
+      const response = await fetch('/api/reviews');
+      if (response.ok) {
+        const data = await response.json();
+        const mappedReviews = data.map((r: any) => ({
+          name: r.userName,
+          location: "Vadodara",
+          rating: r.rating,
+          comment: r.comment
+        }));
+
+        if (mappedReviews.length > 0) {
+          setReviews(mappedReviews);
+        } else {
+          setReviews([
+            {
+              name: "Rahul Patel",
+              location: "Vadodara",
+              rating: 5,
+              comment: "Excellent service by Vipinbhai! My AC was not cooling properly and he fixed it in just 30 minutes. Very professional and affordable."
+            },
+            {
+              name: "Priya Shah",
+              location: "Vadodara",
+              rating: 5,
+              comment: "Best AC technician in Vadodara! Installation was done perfectly and he explained everything clearly. Highly recommend Roshni Enterprise."
+            },
+            {
+              name: "Amit Sharma",
+              location: "Vadodara",
+              rating: 5,
+              comment: "Quick response for emergency repair. Vipinbhai came within 2 hours and fixed the gas leakage issue. Great service!"
+            }
+          ]);
+        }
+      }
+    } catch (error) {
+      console.error('Failed to fetch reviews', error);
+    }
+  };
+
+  useEffect(() => {
+    if (reviews.length === 0) return;
+    const interval = setInterval(() => {
+      setCurrentTestimonial((prev) => (prev + 1) % reviews.length);
+    }, 4000);
+    return () => clearInterval(interval);
+  }, [reviews]);
 
   const services = [
     {
       icon: "❄️",
-      title: "AC Installation",
-      description: "Wall Split, Window AC, Central AC installation by certified technicians",
-      features: ["Wall Split AC", "Window AC", "Central AC", "Professional Setup"]
+      title: "Lite Refresh Service",
+      description: "Best for regular maintenance and quick freshness with odor removal.",
+      features: ["Dust & Odor Removal", "Airflow Improvement", "Performance Check", "30-Day Assurance"]
     },
     {
       icon: "🔧",
-      title: "AC Repair",
-      description: "Quick gas refilling and leakage detection with warranty",
-      features: ["Gas Refilling", "Leakage Fix", "Pressure Testing", "1 Year Warranty"]
+      title: "Power Boost Deep Clean",
+      description: "High-pressure jet wash to boost efficiency and restore weak cooling.",
+      features: ["Power Jet Wash", "Cooling Efficiency Boost", "Energy Optimization", "90-Day Assurance"]
     },
     {
       icon: "📋",
-      title: "AC Maintenance",
-      description: "Comprehensive maintenance to keep your AC running efficiently",
-      features: ["Regular Service", "Deep Cleaning", "Filter Cleaning", "Performance Check"]
+      title: "Foam Guard Deep Clean",
+      description: "Active foam treatment to eliminate heavy dirt, grease, and bacteria.",
+      features: ["Anti-Bacterial Shield", "Coil Protection", "Grime Removal", "Odor Elimination"]
     },
     {
       icon: "🛡️",
-      title: "AC AMC",
-      description: " Annual Maintenance Contracts for worry-free cooling all year round",
-      features: ["Priority Support", "Scheduled Visits", "Discounted Spares", "extended Life"]
+      title: "RustShield Protection",
+      description: "Anti-rust chemical treatment to prevent leakages and extend AC life.",
+      features: ["Leak Prevention", "Coil Protection", "Drain Tray Care", "Life Extended"]
     }
   ];
-
-  const testimonials = [
-    {
-      name: "Rahul Patel",
-      location: "Vadodara",
-      rating: 5,
-      text: "Excellent service by Vipinbhai! My AC was not cooling properly and he fixed it in just 30 minutes. Very professional and affordable."
-    },
-    {
-      name: "Priya Shah",
-      location: "Vadodara",
-      rating: 5,
-      text: "Best AC technician in Vadodara! Installation was done perfectly and he explained everything clearly. Highly recommend Roshni Enterprise."
-    },
-    {
-      name: "Amit Sharma",
-      location: "Vadodara",
-      rating: 5,
-      text: "Quick response for emergency repair. Vipinbhai came within 2 hours and fixed the gas leakage issue. Great service!"
-    }
-  ];
-
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setCurrentTestimonial((prev) => (prev + 1) % testimonials.length);
-    }, 4000);
-    return () => clearInterval(interval);
-  }, []);
 
   const scrollToContact = () => {
     document.getElementById('contact')?.scrollIntoView({ behavior: 'smooth' });
@@ -129,7 +180,10 @@ const Index = () => {
     document.getElementById('services')?.scrollIntoView({ behavior: 'smooth' });
   };
 
-  const scrollToBooking = () => {
+  const scrollToBooking = (service?: string) => {
+    if (service) {
+      setPreSelectedService(service);
+    }
     document.getElementById('booking')?.scrollIntoView({ behavior: 'smooth' });
   };
 
@@ -194,7 +248,7 @@ const Index = () => {
                   </Link>
                 )}
                 <Button
-                  onClick={scrollToBooking}
+                  onClick={() => scrollToBooking()}
                   className="bg-amber-400 hover:bg-amber-500 text-slate-900 font-black px-8 h-12 rounded-lg shadow-lg shadow-amber-400/20 transition-all active:scale-95"
                 >
                   Book Service
@@ -247,15 +301,13 @@ const Index = () => {
                 </h1>
                 <div className="w-24 h-1.5 bg-cyan-400 rounded-full"></div>
                 <p className="text-lg md:text-xl text-slate-600 font-medium leading-relaxed max-w-xl">
-                  Whenever you need any air conditioning services like installation,
-                  replacement, repair, or maintenance, you can count on us. You're
-                  getting a local expert that fixes any problem really quickly.
+                  Not just cleaning <span className="text-blue-600 font-bold">we restore cooling performance.</span> Every service is designed around results, ensuring your comfort all year round.
                 </p>
               </div>
 
               <div className="flex flex-col sm:flex-row gap-4 animate-in fade-in slide-in-from-bottom duration-1000 delay-300">
                 <Button
-                  onClick={scrollToBooking}
+                  onClick={() => scrollToBooking()}
                   className="bg-amber-400 hover:bg-amber-500 text-slate-900 px-8 py-7 md:px-10 text-base md:text-lg rounded-xl shadow-xl shadow-amber-400/20 transition-all active:scale-95 font-black uppercase tracking-wider w-full sm:w-auto"
                 >
                   Request Appointment
@@ -285,7 +337,10 @@ const Index = () => {
         <div className="container mx-auto px-0 md:px-4 relative -bottom-1 lg:-bottom-1 mt-12 lg:mt-24">
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4">
             {/* Repair Block */}
-            <div className="bg-[#0c4a6e] p-10 text-white group hover:bg-[#075985] transition-colors cursor-pointer">
+            <div
+              onClick={() => scrollToBooking("Smart AC Repair")}
+              className="bg-[#0c4a6e] p-10 text-white group hover:bg-[#075985] transition-colors cursor-pointer"
+            >
               <div className="mb-6 p-4 bg-white/10 rounded-xl w-fit group-hover:bg-white/20 transition-colors">
                 <Wrench className="w-10 h-10 text-white" />
               </div>
@@ -299,7 +354,10 @@ const Index = () => {
             </div>
 
             {/* Installation Block */}
-            <div className="bg-[#0369a1] p-10 text-white group hover:bg-[#075985] transition-colors cursor-pointer">
+            <div
+              onClick={() => scrollToBooking("Precision AC Installation")}
+              className="bg-[#0369a1] p-10 text-white group hover:bg-[#075985] transition-colors cursor-pointer"
+            >
               <div className="mb-6 p-4 bg-white/10 rounded-xl w-fit group-hover:bg-white/20 transition-colors">
                 <Shield className="w-10 h-10 text-white" />
               </div>
@@ -313,7 +371,10 @@ const Index = () => {
             </div>
 
             {/* Maintenance Block */}
-            <div className="bg-[#0ea5e9] p-10 text-white group hover:bg-[#38bdf8] transition-colors cursor-pointer">
+            <div
+              onClick={() => scrollToBooking("Lite Refresh Service")}
+              className="bg-[#0ea5e9] p-10 text-white group hover:bg-[#38bdf8] transition-colors cursor-pointer"
+            >
               <div className="mb-6 p-4 bg-white/10 rounded-xl w-fit group-hover:bg-white/20 transition-colors">
                 <Badge className="bg-transparent border-0 p-0 text-white"><Clock className="w-10 h-10" /></Badge>
               </div>
@@ -377,7 +438,7 @@ const Index = () => {
             <p className="text-lg text-slate-600 font-medium">Quick and easy booking. Select your service and preferred time below.</p>
           </div>
           <div className="max-w-4xl mx-auto bg-white rounded-[2rem] shadow-2xl shadow-blue-900/5 p-8 md:p-12">
-            <BookingWidget />
+            <BookingWidget initialService={preSelectedService} />
           </div>
         </div>
       </section>
@@ -392,9 +453,7 @@ const Index = () => {
                 <h2 className="text-3xl md:text-5xl font-bold text-blue-900 leading-tight tracking-tight animate-in fade-in slide-in-from-bottom duration-1000">Excellence in Every Degree</h2>
                 <div className="w-20 h-1.5 bg-amber-400 rounded-full animate-in fade-in zoom-in duration-1000 delay-300"></div>
                 <p className="text-xl text-slate-600 leading-relaxed font-medium">
-                  We don't just fix Air Conditioners; we restore comfort. Roshni Enterprise is built on
-                  <span className="text-blue-600"> trust, speed, and technical mastery</span>.
-                  Serving homes and businesses with unyielding dedication.
+                  We don't just wash units; <span className="text-blue-600">we restore cooling performance.</span> Roshni Enterprise is built on trust, speed, and technical mastery serving Vadodara's homes and businesses.
                 </p>
               </div>
 
@@ -528,30 +587,32 @@ const Index = () => {
 
           <div className="max-w-5xl mx-auto">
             <div className="bg-[#0c4a6e] rounded-[3rem] p-12 md:p-20 relative overflow-hidden border border-white/10 shadow-2xl">
-              <div className="relative z-10 text-center space-y-12">
-                <div className="flex justify-center space-x-2">
-                  {[...Array(5)].map((_, i) => (
-                    <Star key={i} className="w-8 h-8 fill-amber-400 text-amber-400" />
-                  ))}
-                </div>
-
-                <blockquote className="text-2xl md:text-4xl font-black text-white leading-[1.3] italic">
-                  "{testimonials[currentTestimonial].text}"
-                </blockquote>
-
-                <div className="flex flex-col items-center space-y-4">
-                  <div className="w-16 h-16 bg-white/10 rounded-full flex items-center justify-center border-2 border-white/20">
-                    <User className="w-8 h-8 text-white/50" />
+              {reviews.length > 0 && (
+                <div className="relative z-10 text-center space-y-12">
+                  <div className="flex justify-center space-x-2">
+                    {[...Array(reviews[currentTestimonial].rating)].map((_, i) => (
+                      <Star key={i} className="w-8 h-8 fill-amber-400 text-amber-400" />
+                    ))}
                   </div>
-                  <div>
-                    <h4 className="text-2xl font-black text-white">{testimonials[currentTestimonial].name}</h4>
-                    <p className="text-cyan-400 font-bold uppercase tracking-widest text-xs mt-1">{testimonials[currentTestimonial].location}</p>
+
+                  <blockquote className="text-2xl md:text-4xl font-black text-white leading-[1.3] italic">
+                    "{reviews[currentTestimonial].comment}"
+                  </blockquote>
+
+                  <div className="flex flex-col items-center space-y-4">
+                    <div className="w-16 h-16 bg-white/10 rounded-full flex items-center justify-center border-2 border-white/20">
+                      <User className="w-8 h-8 text-white/50" />
+                    </div>
+                    <div>
+                      <h4 className="text-2xl font-black text-white">{reviews[currentTestimonial].name}</h4>
+                      <p className="text-cyan-400 font-bold uppercase tracking-widest text-xs mt-1">{reviews[currentTestimonial].location}</p>
+                    </div>
                   </div>
                 </div>
-              </div>
+              )}
 
               <div className="absolute bottom-10 left-1/2 transform -translate-x-1/2 flex space-x-4">
-                {testimonials.map((_, index) => (
+                {reviews.map((_, index) => (
                   <button
                     key={index}
                     onClick={() => setCurrentTestimonial(index)}
@@ -559,6 +620,117 @@ const Index = () => {
                   />
                 ))}
               </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Limited-Time Offers & Guarantees */}
+      <section className="py-24 bg-white relative overflow-hidden">
+        <div className="absolute top-0 left-0 w-full h-px bg-slate-100"></div>
+        <div className="container mx-auto px-4">
+          <div className="flex flex-col md:flex-row md:items-end justify-between gap-8 mb-16">
+            <div className="space-y-4 text-center md:text-left">
+              <Badge className="bg-amber-100 text-amber-900 border-amber-200 px-4 py-1.5 font-black uppercase tracking-widest text-[10px]">Special Promotions</Badge>
+              <h2 className="text-4xl md:text-5xl font-black text-slate-900 tracking-tight leading-none">Limited-Time <span className="text-blue-600">Smart Savers</span></h2>
+              <p className="text-xl text-slate-500 font-medium max-w-xl">Maximize your cooling performance while minimizing costs with our signature bundle offers.</p>
+            </div>
+            <div className="flex justify-center md:justify-end gap-3 font-black text-[10px] uppercase tracking-widest">
+              <span className="flex items-center gap-2 p-3 bg-slate-50 rounded-xl border border-slate-100"><Zap className="w-4 h-4 text-amber-500" /> Limited Slots</span>
+              <span className="flex items-center gap-2 p-3 bg-slate-50 rounded-xl border border-slate-100"><ShieldCheck className="w-4 h-4 text-blue-600" /> Verified Results</span>
+            </div>
+          </div>
+
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+            {/* Multi-AC Saver */}
+            <Card className="rounded-[2.5rem] border-slate-100 hover:shadow-2xl transition-all group overflow-hidden bg-slate-50/50">
+              <CardContent className="p-8 space-y-6">
+                <div className="w-16 h-16 rounded-2xl bg-white border border-slate-100 flex items-center justify-center shadow-sm group-hover:bg-blue-600 transition-colors">
+                  <LayoutDashboard className="w-8 h-8 text-blue-600 group-hover:text-white" />
+                </div>
+                <div className="space-y-2">
+                  <h3 className="text-2xl font-black text-slate-900 leading-tight">Multi-AC Home Saver</h3>
+                  <p className="text-slate-500 font-medium text-sm leading-relaxed">Save more when you service multiple units in a single visit.</p>
+                </div>
+                <div className="space-y-3 pt-4 border-t border-slate-200/50">
+                  <div className="flex justify-between items-center bg-white p-3 rounded-xl border border-slate-100">
+                    <span className="text-xs font-bold text-slate-600">2 ACs</span>
+                    <Badge className="bg-emerald-100 text-emerald-700 border-0 font-black">₹50 OFF / AC</Badge>
+                  </div>
+                  <div className="flex justify-between items-center bg-white p-3 rounded-xl border border-slate-100">
+                    <span className="text-xs font-bold text-slate-600">3+ ACs</span>
+                    <Badge className="bg-emerald-100 text-emerald-700 border-0 font-black">₹100 OFF / AC</Badge>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Weekday Saver */}
+            <Card className="rounded-[2.5rem] border-slate-100 hover:shadow-2xl transition-all group overflow-hidden bg-blue-50/30">
+              <CardContent className="p-8 space-y-6">
+                <div className="w-16 h-16 rounded-2xl bg-white border border-blue-100 flex items-center justify-center shadow-sm group-hover:bg-blue-600 transition-colors">
+                  <Clock className="w-8 h-8 text-blue-600 group-hover:text-white" />
+                </div>
+                <div className="space-y-2">
+                  <div className="flex items-center gap-2">
+                    <h3 className="text-2xl font-black text-slate-900 leading-tight">Weekday Smart Saver</h3>
+                    <Badge className="bg-blue-600 text-white border-0 text-[8px] px-2">MON-THU</Badge>
+                  </div>
+                  <p className="text-slate-500 font-medium text-sm leading-relaxed">Avoid the weekend rush and get a free bonus with your deep clean.</p>
+                </div>
+                <div className="p-4 bg-white rounded-2xl border border-blue-100 flex items-center gap-4">
+                  <div className="w-10 h-10 bg-cyan-50 rounded-lg flex items-center justify-center shrink-0">
+                    <Snowflake className="w-6 h-6 text-cyan-500" />
+                  </div>
+                  <div>
+                    <p className="text-xs font-black text-slate-400 uppercase tracking-widest leading-none">FREE ADD-ON</p>
+                    <p className="text-sm font-bold text-blue-900 mt-1">Filter Sanitization (₹199 Value)</p>
+                  </div>
+                </div>
+                <p className="text-[10px] font-bold text-blue-600/60 text-center italic mt-4">* Apply for Mon-Thu only</p>
+              </CardContent>
+            </Card>
+
+            {/* Cooling Guarantee */}
+            <Card className="rounded-[2.5rem] border-blue-200 hover:shadow-2xl transition-all group overflow-hidden bg-gradient-to-br from-blue-900 to-blue-800 text-white lg:col-span-1 md:col-span-2">
+              <CardContent className="p-8 h-full flex flex-col justify-between space-y-8">
+                <div className="space-y-6">
+                  <div className="w-16 h-16 rounded-2xl bg-white/10 backdrop-blur-md border border-white/10 flex items-center justify-center">
+                    <ShieldCheck className="w-8 h-8 text-cyan-400" />
+                  </div>
+                  <div className="space-y-2">
+                    <h3 className="text-2xl font-black leading-tight">Cooling Performance Guarantee</h3>
+                    <p className="text-blue-100/60 font-medium text-sm leading-relaxed">Your satisfaction is our only metric. We guarantee restored results.</p>
+                  </div>
+                </div>
+                <div className="bg-white/5 rounded-2xl p-6 border border-white/5 space-y-4">
+                  <div className="flex items-center gap-3">
+                    <div className="w-2 h-2 rounded-full bg-cyan-400 animate-pulse"></div>
+                    <span className="text-xs font-bold uppercase tracking-widest text-cyan-400">7-Day Free Recheck</span>
+                  </div>
+                  <p className="text-xs font-medium text-blue-100/80 italic">"If your AC doesn't restore cooling as promised, we'll re-inspect it at zero cost within 7 days."</p>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+
+          {/* Repair Conversion Offer */}
+          <div className="mt-12 bg-white border-2 border-dashed border-slate-100 rounded-[2.5rem] p-8 md:p-12 text-center">
+            <div className="flex flex-col items-center max-w-2xl mx-auto space-y-6">
+              <div className="flex items-center gap-2 px-6 py-2 bg-slate-50 rounded-full border border-slate-100">
+                <Wrench className="w-4 h-4 text-slate-400" />
+                <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Repair Adjustment Promise</span>
+              </div>
+              <h3 className="text-2xl md:text-3xl font-black text-slate-900 leading-tight">Got a major repair? <span className="text-blue-600">Diagnosis is on us.</span></h3>
+              <p className="text-slate-500 font-medium leading-relaxed">
+                If you proceed with any suggested repair after inspection, your <span className="font-bold text-slate-900">₹299 diagnosis fee</span> will be fully adjusted in your final repair bill. No hidden charges.
+              </p>
+              <Button
+                onClick={() => scrollToBooking("Smart AC Repair")}
+                className="h-14 px-10 rounded-xl bg-slate-950 hover:bg-slate-900 text-white font-black uppercase tracking-widest text-xs active:scale-95 transition-all"
+              >
+                Book Inspection Support
+              </Button>
             </div>
           </div>
         </div>
@@ -598,7 +770,7 @@ const Index = () => {
             <div className="flex flex-col items-center text-center space-y-6">
               <BrandLogo size="lg" variant="light" className="bg-white/5 p-6 rounded-[2.5rem] backdrop-blur-sm border border-white/10" />
               <p className="text-blue-100 max-w-md font-medium text-lg opacity-80 leading-relaxed">
-                Premium air conditioning installation, repair, and maintenance services in Vadodara.
+                Not just cleaning we restore cooling performance with expert AC installation and repair in Vadodara.
               </p>
               <div className="flex space-x-6 h-px w-32 bg-gradient-to-r from-transparent via-cyan-400/30 to-transparent"></div>
               <p className="text-cyan-400 font-black text-xl tracking-wider">

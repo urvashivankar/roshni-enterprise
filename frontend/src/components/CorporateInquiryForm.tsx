@@ -1,4 +1,5 @@
 
+import { getApiUrl } from "@/config";
 import { useState } from "react";
 import { Building2, Users, FileText, CheckCircle2, Loader2, Plus, Minus, X } from "lucide-react";
 import BrandLogo from "@/components/BrandLogo";
@@ -34,12 +35,12 @@ export const CorporateInquiryForm = ({ isOpen, onClose }: { isOpen: boolean; onC
     const { toast } = useToast();
 
     const serviceTypes = [
-        "Bulk Installation",
-        "Comprehensive AMC",
-        "Emergency Repair",
-        "Duct Cleaning",
-        "Chiller Maintenance",
-        "Cassette AC Service"
+        "Precision AC Installation (Bulk)",
+        "Comprehensive Comfort AMC",
+        "Smart AC Repair (Priority)",
+        "Precision Duct Hygiene",
+        "Industrial Chiller Care",
+        "Cassette Performance Service"
     ];
 
     const addService = (type: string) => {
@@ -61,10 +62,10 @@ export const CorporateInquiryForm = ({ isOpen, onClose }: { isOpen: boolean; onC
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
 
-        if (!companyName || !contactPerson || !phone || requirements.length === 0) {
+        if (!companyName || !contactPerson || !phone || !email || requirements.length === 0) {
             toast({
                 title: "Requirements Needed",
-                description: "Please provide company info and at least one service requirement.",
+                description: "Please provide company info, contact email, and at least one service requirement.",
                 variant: "destructive",
             });
             return;
@@ -72,9 +73,13 @@ export const CorporateInquiryForm = ({ isOpen, onClose }: { isOpen: boolean; onC
 
         setIsLoading(true);
         try {
-            const response = await fetch('/api/bookings/corporate-lead', {
+            const token = localStorage.getItem('token');
+            const response = await fetch(getApiUrl('/api/bookings/corporate-lead'), {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
+                headers: {
+                    'Content-Type': 'application/json',
+                    ...(token ? { 'Authorization': `Bearer ${token}` } : {})
+                },
                 body: JSON.stringify({
                     companyName,
                     contactPerson,
@@ -117,7 +122,7 @@ export const CorporateInquiryForm = ({ isOpen, onClose }: { isOpen: boolean; onC
                                 <div className="space-y-4">
                                     <h2 className="text-2xl font-bold leading-tight">Corporate Solutions</h2>
                                     <p className="text-blue-100/60 font-medium">
-                                        Tailored cooling management for schools, offices, and factories in Vadodara.
+                                        Not just cleaning we restore cooling performance for schools, offices, and factories.
                                     </p>
                                 </div>
                                 <div className="space-y-4">
@@ -132,6 +137,18 @@ export const CorporateInquiryForm = ({ isOpen, onClose }: { isOpen: boolean; onC
                                             {text}
                                         </div>
                                     ))}
+                                </div>
+                                {/* Bulk Offers */}
+                                <div className="p-4 bg-white/5 rounded-2xl border border-white/5 space-y-3">
+                                    <p className="text-[10px] font-black uppercase tracking-widest text-cyan-400">Bulk Cooling Program</p>
+                                    <div className="flex justify-between text-xs font-bold">
+                                        <span className="opacity-60">5-10 ACs</span>
+                                        <span className="text-emerald-400">10% OFF</span>
+                                    </div>
+                                    <div className="flex justify-between text-xs font-bold">
+                                        <span className="opacity-60">10+ ACs</span>
+                                        <span className="text-cyan-400">Custom Pricing</span>
+                                    </div>
                                 </div>
                             </div>
                             <div className="relative z-10 pt-8 border-t border-white/10">
@@ -181,6 +198,17 @@ export const CorporateInquiryForm = ({ isOpen, onClose }: { isOpen: boolean; onC
                                                     required
                                                 />
                                             </div>
+                                        </div>
+                                        <div className="space-y-2">
+                                            <Label className="text-slate-600 font-bold ml-1">Official Email Address</Label>
+                                            <Input
+                                                type="email"
+                                                placeholder="e.g. contact@company.com"
+                                                className="h-12 bg-slate-50 border-slate-100 rounded-xl px-4"
+                                                value={email}
+                                                onChange={(e) => setEmail(e.target.value)}
+                                                required
+                                            />
                                         </div>
                                     </div>
 

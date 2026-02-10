@@ -1,6 +1,6 @@
 
-import { useState } from "react";
-import { Calendar as CalendarIcon, Clock, User, Phone, MapPin, Wrench, CheckCircle2 } from "lucide-react";
+import { useState, useRef } from "react";
+import { Calendar as CalendarIcon, Clock, User, Phone, MapPin, Wrench, CheckCircle2, Zap } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -23,8 +23,8 @@ import {
 import { useToast } from "@/components/ui/use-toast";
 import { Loader2 } from "lucide-react";
 
-export const BookingWidget = () => {
-  const [selectedService, setSelectedService] = useState("");
+export const BookingWidget = ({ initialService }: { initialService?: string }) => {
+  const [selectedService, setSelectedService] = useState(initialService || "");
   const [selectedDate, setSelectedDate] = useState("");
   const [selectedTime, setSelectedTime] = useState("");
   const [isDialogOpen, setIsDialogOpen] = useState(false);
@@ -33,15 +33,41 @@ export const BookingWidget = () => {
   const [area, setArea] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
+  const [isInitialSet, setIsInitialSet] = useState(false);
+
+  // Sync initialService when it changes (e.g., user clicks another Book Now button)
+  useState(() => {
+    if (initialService) {
+      setSelectedService(initialService);
+    }
+  });
+
+  // Since we are using a functional component and want to react to prop changes
+  const lastInitialService = useRef(initialService);
+  if (lastInitialService.current !== initialService) {
+    setSelectedService(initialService || "");
+    lastInitialService.current = initialService;
+  }
 
   const services = [
-    "AC Installation",
-    "Gas Refilling",
-    "AC Service (Simple)",
-    "AC Service (Water)",
-    "Emergency Repair",
-    "Annual Maintenance",
-    "Deep Cleaning"
+    "Lite Refresh Service",
+    "Power Boost Deep Clean (Split)",
+    "Power Boost Deep Clean (Window)",
+    "Foam Guard Deep Clean (Split)",
+    "Foam Guard Deep Clean (Window)",
+    "RustShield Protection Clean",
+    "Smart AC Repair",
+    "Complete Gas Health Check",
+    "Precision AC Installation",
+    "Safe AC Uninstallation",
+    "2 AC Saver Foam-Jet",
+    "5 AC Saver Foam-Jet",
+    "Saver Foam-Jet (2 ACs)",
+    "Saver Foam-Jet (5 ACs)",
+    "Clean + Protect Combo",
+    "Bact-Guard Combo",
+    "Annual Maintenance (AMC)",
+    "Custom / Corporate Inquiry"
   ];
 
   const timeSlots = [
@@ -168,12 +194,24 @@ export const BookingWidget = () => {
 
               {/* Right Form Panel */}
               <CardContent className="lg:col-span-3 p-8 lg:p-12 bg-white">
+                {/* Welcome Offer Banner */}
+                <div className="mb-10 bg-blue-50 border border-blue-100 rounded-2xl p-6 flex items-start gap-4 active:scale-[0.99] transition-all cursor-default">
+                  <div className="w-10 h-10 rounded-full bg-blue-600 flex items-center justify-center shrink-0">
+                    <Zap className="w-5 h-5 text-white" />
+                  </div>
+                  <div className="flex-1">
+                    <h4 className="text-sm font-black text-blue-900 uppercase tracking-widest leading-none">First-Time Customer?</h4>
+                    <p className="text-blue-600 font-bold text-lg mt-1 leading-tight">Get Power Boost @ Lite Price (₹499)</p>
+                    <p className="text-[10px] font-medium text-blue-500/60 mt-1 italic leading-tight">"Ma'am, since it's your first booking, we're upgrading you to our Power Boost service at no extra cost today."</p>
+                  </div>
+                </div>
+
                 <div className="space-y-8">
                   <div className="grid md:grid-cols-2 gap-6">
                     <div className="space-y-2">
                       <Label htmlFor="service" className="text-slate-700 font-semibold mb-2 block">Choose Service</Label>
                       <Select value={selectedService} onValueChange={setSelectedService}>
-                        <SelectTrigger className="bg-slate-50 border-slate-200 h-12 rounded-xl focus:ring-blue-500">
+                        <SelectTrigger className="bg-slate-50 border-slate-200 h-12 rounded-xl focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all">
                           <SelectValue placeholder="Select a service" />
                         </SelectTrigger>
                         <SelectContent>
@@ -190,7 +228,7 @@ export const BookingWidget = () => {
                         <Input
                           type="date"
                           id="date"
-                          className="bg-slate-50 border-slate-200 h-12 rounded-xl px-4 focus:ring-blue-500"
+                          className="bg-slate-50 border-slate-200 h-12 rounded-xl px-4 focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all cursor-pointer"
                           value={selectedDate}
                           onChange={(e) => setSelectedDate(e.target.value)}
                         />
@@ -225,7 +263,7 @@ export const BookingWidget = () => {
                           <Input
                             id="name"
                             placeholder="Your name"
-                            className="bg-slate-50 border-slate-200 h-12 pl-10 rounded-xl"
+                            className="bg-slate-50 border-slate-200 h-12 pl-10 rounded-xl focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all"
                             value={name}
                             onChange={(e) => setName(e.target.value)}
                           />
@@ -238,7 +276,7 @@ export const BookingWidget = () => {
                           <Input
                             id="phone"
                             placeholder="10-digit number"
-                            className="bg-slate-50 border-slate-200 h-12 pl-10 rounded-xl"
+                            className="bg-slate-50 border-slate-200 h-12 pl-10 rounded-xl focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all"
                             value={phone}
                             onChange={(e) => setPhone(e.target.value)}
                           />
@@ -253,7 +291,7 @@ export const BookingWidget = () => {
                         <Input
                           id="area"
                           placeholder="E.g. Alkapuri, Vadodara"
-                          className="bg-slate-50 border-slate-200 h-12 pl-10 rounded-xl"
+                          className="bg-slate-50 border-slate-200 h-12 pl-10 rounded-xl focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all"
                           value={area}
                           onChange={(e) => setArea(e.target.value)}
                         />

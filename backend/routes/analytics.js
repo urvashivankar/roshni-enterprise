@@ -3,25 +3,12 @@ const router = express.Router();
 const Analytics = require('../models/Analytics');
 const Booking = require('../models/Booking');
 const auth = require('../middleware/auth');
-
-// Middleware to check if user is admin
-const isAdmin = async (req, res, next) => {
-    try {
-        const User = require('../models/User');
-        const user = await User.findById(req.user.id);
-        if (user.role !== 'admin') {
-            return res.status(403).json({ message: 'Access denied. Admin only.' });
-        }
-        next();
-    } catch (err) {
-        res.status(500).json({ message: 'Server error' });
-    }
-};
+const admin = require('../middleware/admin');
 
 // @route   GET /api/analytics/revenue
 // @desc    Get revenue metrics
 // @access  Private (Admin only)
-router.get('/revenue', auth, isAdmin, async (req, res) => {
+router.get('/revenue', auth, admin, async (req, res) => {
     try {
         const { period = 'month' } = req.query;
 
@@ -62,7 +49,7 @@ router.get('/revenue', auth, isAdmin, async (req, res) => {
 // @route   GET /api/analytics/trends
 // @desc    Get historical trends
 // @access  Private (Admin only)
-router.get('/trends', auth, isAdmin, async (req, res) => {
+router.get('/trends', auth, admin, async (req, res) => {
     try {
         const thirtyDaysAgo = new Date();
         thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
@@ -89,7 +76,7 @@ router.get('/trends', auth, isAdmin, async (req, res) => {
 // @route   GET /api/analytics/services
 // @desc    Get service popularity
 // @access  Private (Admin only)
-router.get('/services', auth, isAdmin, async (req, res) => {
+router.get('/services', auth, admin, async (req, res) => {
     try {
         const thirtyDaysAgo = new Date();
         thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
@@ -126,7 +113,7 @@ router.get('/services', auth, isAdmin, async (req, res) => {
 // @route   GET /api/analytics/dashboard
 // @desc    Get dashboard summary
 // @access  Private (Admin only)
-router.get('/dashboard', auth, isAdmin, async (req, res) => {
+router.get('/dashboard', auth, admin, async (req, res) => {
     try {
         const today = new Date();
         today.setHours(0, 0, 0, 0);

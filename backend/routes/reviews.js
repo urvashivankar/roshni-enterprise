@@ -2,20 +2,7 @@ const express = require('express');
 const router = express.Router();
 const Review = require('../models/Review');
 const Booking = require('../models/Booking');
-const jwt = require('jsonwebtoken');
-
-// Middleware to verify JWT
-const auth = async (req, res, next) => {
-    try {
-        const token = req.header('Authorization')?.replace('Bearer ', '');
-        if (!token) throw new Error();
-        const decoded = jwt.verify(token, process.env.JWT_SECRET);
-        req.user = decoded;
-        next();
-    } catch (e) {
-        res.status(401).send({ error: 'Please authenticate.' });
-    }
-};
+const auth = require('../middleware/auth');
 
 // @route   POST /api/reviews
 // @desc    Submit a review for a booking
@@ -26,13 +13,15 @@ router.post('/', auth, async (req, res) => {
 
         // Use the userId from the token
         const userId = req.user.id;
-        const userName = req.user.name || 'Customer';
 
-        // Check if booking exists and is completed (optional but good practice)
+        // Check if booking exists
         const booking = await Booking.findById(bookingId);
         if (!booking) {
             return res.status(404).json({ message: 'Booking not found' });
         }
+
+        // Get name from booking if not in user
+        const userName = req.user.name || booking.name || 'Valued Customer';
 
         // Create new review
         const review = new Review({
@@ -44,6 +33,14 @@ router.post('/', auth, async (req, res) => {
         });
 
         await review.save();
+
+        // Real-time broadcast
+        const io = req.app.get('io');
+        if (io) {
+            io.emit('newReview', review);
+            console.log('Broadcasted new review event');
+        }
+
         res.status(201).json(review);
     } catch (err) {
         console.error('Review Error:', err.message);
