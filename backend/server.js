@@ -29,7 +29,8 @@ const corsOptions = {
             'http://localhost:8080',
             'http://localhost:5173',
             'http://localhost:3000',
-            'https://cooling-comfort-connect.vercel.app' // Add your production domain here
+            'https://cooling-comfort-connect.vercel.app', // Add your production domain here
+            'https://roshni-enterprise.vercel.app'
         ];
 
         // Allow requests with no origin (like mobile apps or curl requests)
@@ -60,6 +61,17 @@ if (process.env.NODE_ENV !== 'production') {
 // Routes
 app.use('/api/bookings', bookingRoutes);
 app.use('/api/auth', authRoutes);
+
+// Route Aliases (allow calling /signup and /login directly)
+app.post('/signup', (req, res, next) => {
+    req.url = '/register';
+    authRoutes(req, res, next);
+});
+app.post('/login', (req, res, next) => {
+    req.url = '/login';
+    authRoutes(req, res, next);
+});
+
 app.use('/api/reviews', reviewRoutes);
 app.use('/api/analytics', analyticsRoutes);
 app.use('/api/audit-logs', auditLogRoutes);

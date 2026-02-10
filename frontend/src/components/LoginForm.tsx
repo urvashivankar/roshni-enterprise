@@ -28,14 +28,22 @@ export const LoginForm = () => {
     setIsLoading(true);
 
     try {
-      const response = await fetch(getApiUrl('/api/auth/login'), {
+      const response = await fetch(getApiUrl('/login'), {
         method: 'POST',
 
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(formData)
       });
 
-      const data = await response.json();
+      const contentType = response.headers.get("content-type");
+      let data;
+      if (contentType && contentType.includes("application/json")) {
+        data = await response.json();
+      } else {
+        const text = await response.text();
+        console.error("Non-JSON response:", text);
+        throw new Error(`Server Error: ${response.status}. The backend might be down or waking up. Please try again in 30 seconds.`);
+      }
 
       if (response.ok) {
         localStorage.setItem('token', data.token);
