@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import { Phone, MapPin, Star, Clock, Shield, Users, ChevronRight, Calendar, User, MessageSquare, Instagram, Menu, X, LayoutDashboard, LogIn, Mail, Wrench, Check, Snowflake, ShieldCheck, Target, Zap, CheckCircle2 } from "lucide-react";
 import { Link } from "react-router-dom";
+import { getApiUrl } from "@/config";
 import BrandLogo from "@/components/BrandLogo";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -97,7 +98,7 @@ const Index = () => {
 
   const fetchReviews = async () => {
     try {
-      const response = await fetch('/api/reviews');
+      const response = await fetch(getApiUrl('/api/reviews'));
       if (response.ok) {
         const data = await response.json();
         const mappedReviews = data.map((r: any) => ({

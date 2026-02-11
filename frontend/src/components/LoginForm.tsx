@@ -28,7 +28,7 @@ export const LoginForm = () => {
     setIsLoading(true);
 
     try {
-      const response = await fetch(getApiUrl('/login'), {
+      const response = await fetch(getApiUrl('/api/auth/login'), {
         method: 'POST',
 
         headers: { 'Content-Type': 'application/json' },

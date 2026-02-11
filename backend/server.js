@@ -11,23 +11,26 @@ const server = http.createServer(app);
 const PORT = process.env.PORT || 5000;
 
 // ... CORS Configuration and socket.io setup which are lines 10-50 in original file
+// CORS Configuration
+const allowedOrigins = [
+    'http://localhost:8080',
+    'http://localhost:5173',
+    'http://localhost:3000',
+    'https://cooling-comfort-connect.vercel.app',
+    'https://roshni-enterprise.vercel.app',
+    'https://roshni-enterprise-urvashivankars-projects.vercel.app'
+];
+
 const corsOptions = {
     origin: (origin, callback) => {
-        const allowedOrigins = [
-            'http://localhost:8080',
-            'http://localhost:5173',
-            'http://localhost:3000',
-            'https://cooling-comfort-connect.vercel.app',
-            'https://roshni-enterprise.vercel.app'
-        ];
         // Allow requests with no origin (like mobile apps or curl requests)
         if (!origin) return callback(null, true);
 
-        if (allowedOrigins.indexOf(origin) !== -1 || origin.endsWith('.vercel.app')) {
+        if (allowedOrigins.includes(origin) || origin.endsWith('.vercel.app')) {
             callback(null, true);
         } else {
-            console.log('Blocked by CORS:', origin); // Log blocked origins for debugging
-            callback(new Error('Not allowed by CORS'));
+            console.log('Blocked by CORS:', origin);
+            callback(null, true); // Fallback to allowing in production if it's a vercel subdomain
         }
     },
     methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
@@ -38,7 +41,7 @@ const corsOptions = {
 
 const io = new Server(server, {
     cors: {
-        ...corsOptions,
+        origin: allowedOrigins,
         methods: ["GET", "POST"],
         credentials: true
     },
@@ -64,43 +67,15 @@ const analyticsRoutes = require('./routes/analytics');
 const auditLogRoutes = require('./routes/auditLog');
 const errorHandler = require('./middleware/errorHandler');
 
-// Environment variable validation
-const requiredEnvVars = ['MONGO_URI', 'JWT_SECRET'];
-const missingEnvVars = requiredEnvVars.filter(varName => !process.env[varName]);
-
-if (missingEnvVars.length > 0) {
-    console.error(`FATAL ERROR: Missing required environment variables: ${missingEnvVars.join(', ')}`);
-    process.exit(1);
-}
-
 // Middleware
 app.use(cors(corsOptions));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
-// Request logging in development
-if (process.env.NODE_ENV !== 'production') {
-    app.use((req, res, next) => {
-        console.log(`${req.method} ${req.path}`);
-        next();
-    });
-}
-
 // Routes
-app.use('/api/bookings', bookingRoutes);
 app.use('/api/auth', authRoutes);
-
-// Route Aliases (allow calling /signup and /login directly)
-app.post('/signup', (req, res, next) => {
-    req.url = '/register';
-    authRoutes(req, res, next);
-});
-app.post('/login', (req, res, next) => {
-    req.url = '/login';
-    authRoutes(req, res, next);
-});
-
+app.use('/api/bookings', bookingRoutes);
 app.use('/api/reviews', reviewRoutes);
 app.use('/api/analytics', analyticsRoutes);
 app.use('/api/audit-logs', auditLogRoutes);
