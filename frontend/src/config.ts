@@ -1,6 +1,6 @@
-// Fallback to the live Render URL if env var is missing (Safety net)
-const PROD_URL = 'https://roshni-enterprise-backend.onrender.com';
-const RAW_URL = import.meta.env.VITE_API_URL || PROD_URL;
+// In production, we prefer relative paths to use the Vercel proxy (avoids CORS)
+// In development, we use localhost:5000
+const RAW_URL = import.meta.env.VITE_API_URL || (import.meta.env.MODE === 'production' ? '' : 'http://localhost:5000');
 export const API_BASE_URL = RAW_URL.endsWith('/') ? RAW_URL.slice(0, -1) : RAW_URL;
 
 export const getApiUrl = (endpoint: string) => {

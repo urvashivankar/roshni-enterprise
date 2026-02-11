@@ -11,7 +11,7 @@ const server = http.createServer(app);
 const PORT = process.env.PORT || 5000;
 
 // ... CORS Configuration and socket.io setup which are lines 10-50 in original file
-// CORS Configuration - Permissive for production debugging
+// Ultimate CORS Fix - Manual Middleware for absolute control
 const allowedOrigins = [
     'http://localhost:8080',
     'http://localhost:5173',
@@ -21,36 +21,41 @@ const allowedOrigins = [
     'https://roshni-enterprise-urvashivankars-projects.vercel.app'
 ];
 
-const corsOptions = {
-    origin: function (origin, callback) {
-        // Allow local development and specific production domains
-        if (!origin || allowedOrigins.indexOf(origin) !== -1 || origin.endsWith('.vercel.app')) {
-            callback(null, true);
-        } else {
-            // Fallback: in production, sometimes we need to be permissive to debug
-            callback(null, true);
-        }
-    },
-    methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
-    allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'Accept', 'Origin'],
-    credentials: true,
-    preflightContinue: false,
-    optionsSuccessStatus: 200
-};
+app.use((req, res, next) => {
+    const origin = req.headers.origin;
 
-// Apply CORS early
-app.use(cors(corsOptions));
+    // Check if origin is allowed
+    const isAllowed = !origin ||
+        allowedOrigins.includes(origin) ||
+        origin.endsWith('.vercel.app') ||
+        origin.includes('localhost');
 
-// Explicitly handle OPTIONS preflight for all routes
-app.options('*', cors(corsOptions));
+    if (isAllowed && origin) {
+        res.setHeader('Access-Control-Allow-Origin', origin);
+    } else if (!origin) {
+        // No origin usually means server-to-server or non-browser request
+        res.setHeader('Access-Control-Allow-Origin', '*');
+    }
+
+    res.setHeader('Access-Control-Allow-Credentials', 'true');
+    res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, PATCH, DELETE, OPTIONS');
+    res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Requested-With, Accept, Origin');
+
+    // Handle Preflight
+    if (req.method === 'OPTIONS') {
+        return res.status(200).end();
+    }
+    next();
+});
 
 const io = new Server(server, {
     cors: {
-        origin: true, // Reflect origin
+        origin: true, // This reflects the origin
         methods: ["GET", "POST"],
         credentials: true
     },
-    transports: ['websocket', 'polling']
+    transports: ['websocket', 'polling'],
+    allowEIO3: true // Backward compatibility
 });
 
 // Store io in app to use in routes
