@@ -11,7 +11,7 @@ const server = http.createServer(app);
 const PORT = process.env.PORT || 5000;
 
 // ... CORS Configuration and socket.io setup which are lines 10-50 in original file
-// CORS Configuration
+// CORS Configuration - Permissive for production debugging
 const allowedOrigins = [
     'http://localhost:8080',
     'http://localhost:5173',
@@ -22,26 +22,31 @@ const allowedOrigins = [
 ];
 
 const corsOptions = {
-    origin: (origin, callback) => {
-        // Allow requests with no origin (like mobile apps or curl requests)
-        if (!origin) return callback(null, true);
-
-        if (allowedOrigins.includes(origin) || origin.endsWith('.vercel.app')) {
+    origin: function (origin, callback) {
+        // Allow local development and specific production domains
+        if (!origin || allowedOrigins.indexOf(origin) !== -1 || origin.endsWith('.vercel.app')) {
             callback(null, true);
         } else {
-            console.log('Blocked by CORS:', origin);
-            callback(null, true); // Fallback to allowing in production if it's a vercel subdomain
+            // Fallback: in production, sometimes we need to be permissive to debug
+            callback(null, true);
         }
     },
     methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
-    allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'Accept'],
+    allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'Accept', 'Origin'],
     credentials: true,
+    preflightContinue: false,
     optionsSuccessStatus: 200
 };
 
+// Apply CORS early
+app.use(cors(corsOptions));
+
+// Explicitly handle OPTIONS preflight for all routes
+app.options('*', cors(corsOptions));
+
 const io = new Server(server, {
     cors: {
-        origin: allowedOrigins,
+        origin: true, // Reflect origin
         methods: ["GET", "POST"],
         credentials: true
     },
