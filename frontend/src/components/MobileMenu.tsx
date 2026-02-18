@@ -58,7 +58,7 @@ export const MobileMenu = ({ isLoggedIn, onLogout, onBookingClick }: MobileMenuP
         {/* Attractive Graphic Header */}
         <div className="relative h-48 w-full overflow-hidden">
           <img
-            src="https://images.unsplash.com/photo-1621905238294-4841d3972b3a?q=80&w=2070&auto=format&fit=crop"
+            src="https://images.unsplash.com/photo-1599933023848-bfff2346c4df?q=80&w=2070&auto=format&fit=crop"
             className="w-full h-full object-cover"
             alt="Premium AC Service"
           />
