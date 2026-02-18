@@ -18,7 +18,7 @@ app.use(rateLimiter); // Apply global rate limiting
 const server = http.createServer(app);
 const PORT = process.env.PORT || 5000;
 
-// ... CORS Configuration and socket.io setup which are lines 10-50 in original file
+
 // Ultimate CORS Fix - Manual Middleware for absolute control
 const allowedOrigins = [
     'http://localhost:8080',

@@ -6,7 +6,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { SEOProvider } from "@/components/SEOHead";
 import Index from "./pages/Index";
-import Login from "./pages/Login"; // Existing login, keeping it if used for other purposes, or we can replace it.
+import Login from "./pages/Login";
 import AdminLogin from "./pages/AdminLogin";
 import AdminCommandCenter from "./pages/AdminCommandCenter";
 import AdminRevenue from "./pages/AdminRevenue";
