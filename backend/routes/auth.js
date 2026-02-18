@@ -1,115 +1,24 @@
 const express = require('express');
 const router = express.Router();
-const bcrypt = require('bcryptjs');
-const jwt = require('jsonwebtoken');
-const User = require('../models/User');
+
+// Middlewares
 const auth = require('../middleware/auth');
+const { validateRegister, validateLogin } = require('../middleware/validation');
+const { authRateLimiter } = require('../middleware/rateLimiter');
+
+// Controllers
+const authController = require('../controllers/authController');
 
 // @route   POST api/auth/register
-// @desc    Register user (Admin only or initial setup)
-// @access  Public (for now, to seed admin)
-router.post('/register', async (req, res) => {
-    console.time(`Register: ${req.body.email}`);
-    const { email, password } = req.body;
-
-    try {
-        let user = await User.findOne({ email });
-
-        if (user) {
-            console.timeEnd(`Register: ${req.body.email}`);
-            return res.status(400).json({ message: 'User already exists' });
-        }
-
-        user = new User({
-            email,
-            password
-        });
-
-        const salt = await bcrypt.genSalt(10);
-        user.password = await bcrypt.hash(password, salt);
-
-        await user.save();
-
-        const payload = {
-            user: {
-                id: user.id
-            }
-        };
-
-        jwt.sign(
-            payload,
-            process.env.JWT_SECRET,
-            { expiresIn: '5d' },
-            (err, token) => {
-                if (err) throw err;
-                console.timeEnd(`Register: ${req.body.email}`);
-                res.json({ token });
-            }
-        );
-    } catch (err) {
-        console.error(err.message);
-        console.timeEnd(`Register: ${req.body.email}`);
-        res.status(500).json({ message: 'Server error' });
-    }
-});
+// @desc    Register user
+router.post('/register', authRateLimiter, validateRegister, authController.register);
 
 // @route   POST api/auth/login
 // @desc    Authenticate user & get token
-// @access  Public
-router.post('/login', async (req, res) => {
-    console.time(`Login: ${req.body.email}`);
-    const { email, password } = req.body;
-
-    try {
-        let user = await User.findOne({ email });
-
-        if (!user) {
-            console.timeEnd(`Login: ${req.body.email}`);
-            return res.status(400).json({ message: 'Invalid Credentials' });
-        }
-
-        const isMatch = await bcrypt.compare(password, user.password);
-
-        if (!isMatch) {
-            console.timeEnd(`Login: ${req.body.email}`);
-            return res.status(400).json({ message: 'Invalid Credentials' });
-        }
-
-        const payload = {
-            user: {
-                id: user.id,
-                role: user.role // Include role in JWT payload
-            }
-        };
-
-        jwt.sign(
-            payload,
-            process.env.JWT_SECRET,
-            { expiresIn: '5d' },
-            (err, token) => {
-                if (err) throw err;
-                console.timeEnd(`Login: ${req.body.email}`);
-                res.json({ token });
-            }
-        );
-    } catch (err) {
-        console.error(err.message);
-        console.timeEnd(`Login: ${req.body.email}`);
-        res.status(500).json({ message: 'Server error' });
-    }
-});
+router.post('/login', authRateLimiter, validateLogin, authController.login);
 
 // @route   GET api/auth/user
 // @desc    Get logged in user
-// @access  Private
-router.get('/user', auth, async (req, res) => {
-    try {
-        const user = await User.findById(req.user.id).select('-password');
-        res.json(user);
-    } catch (err) {
-        console.error(err.message);
-        res.status(500).json({ message: 'Server Error' });
-    }
-});
+router.get('/user', auth, authController.getUser);
 
 module.exports = router;

@@ -9,6 +9,10 @@ import { Badge } from "@/components/ui/badge";
 import { PricingSection } from "@/components/PricingSection";
 import { BookingWidget } from "@/components/BookingWidget";
 import { CorporateInquiryForm } from "@/components/CorporateInquiryForm";
+import { MobileMenu } from "@/components/MobileMenu";
+import { StickyCallButton } from "@/components/StickyCallButton";
+import { WhatsAppButton } from "@/components/WhatsAppButton";
+import { SEOHead } from "@/components/SEOHead";
 import socket from "@/lib/socket";
 
 const CountUp = ({ end, duration = 2000, suffix = "" }: { end: string, duration?: number, suffix?: string }) => {
@@ -67,7 +71,6 @@ interface Testimonial {
 
 const Index = () => {
   const [currentTestimonial, setCurrentTestimonial] = useState(0);
-  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [isCorporateModalOpen, setIsCorporateModalOpen] = useState(false);
   const [reviews, setReviews] = useState<Testimonial[]>([]);
@@ -190,6 +193,8 @@ const Index = () => {
 
   return (
     <div className="min-h-screen bg-white font-sans text-slate-900">
+      <SEOHead />
+
       {/* Top Utility Bar */}
       <div className="bg-slate-50 border-b border-slate-200 py-2 hidden sm:block">
         <div className="container mx-auto px-4 flex justify-between items-center text-xs font-medium text-slate-600">
@@ -256,37 +261,13 @@ const Index = () => {
                 </Button>
               </div>
 
-              <button
-                onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-                className="lg:hidden p-2 text-slate-600 hover:text-blue-600 transition-colors"
-              >
-                {isMobileMenuOpen ? <X className="w-7 h-7" /> : <Menu className="w-7 h-7" />}
-              </button>
+              <MobileMenu
+                isLoggedIn={isLoggedIn}
+                onLogout={() => setIsLoggedIn(false)}
+                onBookingClick={() => scrollToBooking()}
+              />
             </div>
           </div>
-
-          {/* Mobile Menu */}
-          {isMobileMenuOpen && (
-            <div className="lg:hidden py-6 animate-in fade-in slide-in-from-top-4 duration-300">
-              <div className="flex flex-col space-y-4">
-                {['About', 'Services', 'Pricing', 'Reviews', 'Contact'].map((item) => (
-                  <a
-                    key={item}
-                    href={`#${item.toLowerCase()}`}
-                    onClick={() => setIsMobileMenuOpen(false)}
-                    className="text-slate-700 font-bold py-3 px-4 rounded-xl hover:bg-blue-50 hover:text-blue-600 transition-all"
-                  >
-                    {item}
-                  </a>
-                ))}
-                <div className="pt-4 border-t border-slate-100 flex flex-col space-y-3">
-                  <Button className="bg-amber-400 hover:bg-amber-500 text-slate-900 font-black h-14 rounded-xl">
-                    Request Appointment
-                  </Button>
-                </div>
-              </div>
-            </div>
-          )}
         </div>
       </nav>
 
@@ -798,16 +779,9 @@ const Index = () => {
         onClose={() => setIsCorporateModalOpen(false)}
       />
 
-      {/* Floating Buttons */}
-      <a
-        href="https://wa.me/919727690078"
-        className="fixed bottom-8 right-8 z-[100] bg-green-500 text-white p-5 rounded-full shadow-2xl hover:scale-110 active:scale-95 transition-all duration-300"
-        target="_blank"
-        rel="noopener noreferrer"
-      >
-        <MessageSquare className="w-8 h-8 fill-white" />
-      </a>
-
+      {/* Mobile UX Components */}
+      <WhatsAppButton />
+      <StickyCallButton />
     </div>
   );
 };

@@ -1,7 +1,6 @@
-
 import { getApiUrl } from "@/config";
 import { useState } from "react";
-import { Building2, Users, FileText, CheckCircle2, Loader2, Plus, Minus, X } from "lucide-react";
+import { Building2, Users, FileText, CheckCircle2, Loader2, Plus, Minus, X, AlertCircle } from "lucide-react";
 import BrandLogo from "@/components/BrandLogo";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -17,6 +16,7 @@ import {
     DialogDescription,
 } from "@/components/ui/dialog";
 import { useToast } from "@/components/ui/use-toast";
+import { corporateInquirySchema, validateSingleField } from "@/lib/validation";
 
 interface ServiceRequirement {
     type: string;
@@ -32,6 +32,7 @@ export const CorporateInquiryForm = ({ isOpen, onClose }: { isOpen: boolean; onC
     const [additionalNotes, setAdditionalNotes] = useState("");
     const [isLoading, setIsLoading] = useState(false);
     const [isSuccessOpen, setIsSuccessOpen] = useState(false);
+    const [errors, setErrors] = useState<Record<string, string>>({});
     const { toast } = useToast();
 
     const serviceTypes = [
@@ -43,14 +44,25 @@ export const CorporateInquiryForm = ({ isOpen, onClose }: { isOpen: boolean; onC
         "Cassette Performance Service"
     ];
 
+    const handleFieldChange = (field: string, value: string, setter: (val: string) => void) => {
+        setter(value);
+        const error = validateSingleField(corporateInquirySchema, field, value);
+        setErrors(prev => ({ ...prev, [field]: error }));
+    };
+
     const addService = (type: string) => {
         if (!requirements.find(r => r.type === type)) {
             setRequirements([...requirements, { type, units: 1 }]);
+            setErrors(prev => ({ ...prev, requirements: "" }));
         }
     };
 
     const removeService = (type: string) => {
-        setRequirements(requirements.filter(r => r.type !== type));
+        const newReqs = requirements.filter(r => r.type !== type);
+        setRequirements(newReqs);
+        if (newReqs.length === 0) {
+            setErrors(prev => ({ ...prev, requirements: "Please add at least one service" }));
+        }
     };
 
     const updateUnits = (type: string, delta: number) => {
@@ -62,10 +74,27 @@ export const CorporateInquiryForm = ({ isOpen, onClose }: { isOpen: boolean; onC
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
 
-        if (!companyName || !contactPerson || !phone || !email || requirements.length === 0) {
+        const formData = {
+            companyName,
+            contactPerson,
+            email,
+            phone,
+            requirements,
+            additionalNotes
+        };
+
+        const result = corporateInquirySchema.safeParse(formData);
+
+        if (!result.success) {
+            const fieldErrors: Record<string, string> = {};
+            result.error.errors.forEach(err => {
+                if (err.path[0]) fieldErrors[err.path[0] as string] = err.message;
+            });
+            setErrors(fieldErrors);
+
             toast({
-                title: "Requirements Needed",
-                description: "Please provide company info, contact email, and at least one service requirement.",
+                title: "Validation Error",
+                description: "Please check the form for errors.",
                 variant: "destructive",
             });
             return;
@@ -80,14 +109,7 @@ export const CorporateInquiryForm = ({ isOpen, onClose }: { isOpen: boolean; onC
                     'Content-Type': 'application/json',
                     ...(token ? { 'Authorization': `Bearer ${token}` } : {})
                 },
-                body: JSON.stringify({
-                    companyName,
-                    contactPerson,
-                    email,
-                    phone,
-                    requirements,
-                    additionalNotes
-                }),
+                body: JSON.stringify(formData),
             });
 
             if (response.ok) {
@@ -107,7 +129,7 @@ export const CorporateInquiryForm = ({ isOpen, onClose }: { isOpen: boolean; onC
         } catch (error) {
             toast({
                 title: "Submission Failed",
-                description: "Could not send inquiry. Please call us directly.",
+                description: error instanceof Error ? error.message : "Could not send inquiry.",
                 variant: "destructive",
             });
         } finally {
@@ -174,54 +196,66 @@ export const CorporateInquiryForm = ({ isOpen, onClose }: { isOpen: boolean; onC
                                 </div>
 
                                 <div className="space-y-6">
-                                    <div className="grid gap-4">
+                                    <div className="space-y-2">
+                                        <Label className={`font-bold ml-1 ${errors.companyName ? "text-red-500" : "text-slate-600"}`}>
+                                            Company / School Name
+                                        </Label>
+                                        <Input
+                                            placeholder="e.g. St. Xaviers School"
+                                            className={`h-12 bg-slate-50 border-slate-100 rounded-xl focus:bg-white transition-all px-4 ${errors.companyName ? "border-red-500 ring-red-500" : ""}`}
+                                            value={companyName}
+                                            onChange={(e) => handleFieldChange("companyName", e.target.value, setCompanyName)}
+                                            required
+                                        />
+                                        {errors.companyName && <p className="text-red-500 text-[10px] font-bold ml-1 flex items-center gap-1"><AlertCircle className="w-3 h-3" /> {errors.companyName}</p>}
+                                    </div>
+                                    <div className="grid sm:grid-cols-2 gap-4">
                                         <div className="space-y-2">
-                                            <Label className="text-slate-600 font-bold ml-1">Company / School Name</Label>
+                                            <Label className={`font-bold ml-1 ${errors.contactPerson ? "text-red-500" : "text-slate-600"}`}>
+                                                Contact Person
+                                            </Label>
                                             <Input
-                                                placeholder="e.g. St. Xaviers School"
-                                                className="h-12 bg-slate-50 border-slate-100 rounded-xl focus:bg-white transition-all px-4"
-                                                value={companyName}
-                                                onChange={(e) => setCompanyName(e.target.value)}
+                                                placeholder="Full Name"
+                                                className={`h-12 bg-slate-50 border-slate-100 rounded-xl px-4 ${errors.contactPerson ? "border-red-500 ring-red-500" : ""}`}
+                                                value={contactPerson}
+                                                onChange={(e) => handleFieldChange("contactPerson", e.target.value, setContactPerson)}
                                                 required
                                             />
-                                        </div>
-                                        <div className="grid sm:grid-cols-2 gap-4">
-                                            <div className="space-y-2">
-                                                <Label className="text-slate-600 font-bold ml-1">Contact Person</Label>
-                                                <Input
-                                                    placeholder="Full Name"
-                                                    className="h-12 bg-slate-50 border-slate-100 rounded-xl px-4"
-                                                    value={contactPerson}
-                                                    onChange={(e) => setContactPerson(e.target.value)}
-                                                    required
-                                                />
-                                            </div>
-                                            <div className="space-y-2">
-                                                <Label className="text-slate-600 font-bold ml-1">Phone Number</Label>
-                                                <Input
-                                                    placeholder="10-digit #"
-                                                    className="h-12 bg-slate-50 border-slate-100 rounded-xl px-4"
-                                                    value={phone}
-                                                    onChange={(e) => setPhone(e.target.value)}
-                                                    required
-                                                />
-                                            </div>
+                                            {errors.contactPerson && <p className="text-red-500 text-[10px] font-bold ml-1 flex items-center gap-1"><AlertCircle className="w-3 h-3" /> {errors.contactPerson}</p>}
                                         </div>
                                         <div className="space-y-2">
-                                            <Label className="text-slate-600 font-bold ml-1">Official Email Address</Label>
+                                            <Label className={`font-bold ml-1 ${errors.phone ? "text-red-500" : "text-slate-600"}`}>
+                                                Phone Number
+                                            </Label>
                                             <Input
-                                                type="email"
-                                                placeholder="e.g. contact@company.com"
-                                                className="h-12 bg-slate-50 border-slate-100 rounded-xl px-4"
-                                                value={email}
-                                                onChange={(e) => setEmail(e.target.value)}
+                                                placeholder="10-digit #"
+                                                className={`h-12 bg-slate-50 border-slate-100 rounded-xl px-4 ${errors.phone ? "border-red-500 ring-red-500" : ""}`}
+                                                value={phone}
+                                                onChange={(e) => handleFieldChange("phone", e.target.value, setPhone)}
                                                 required
                                             />
+                                            {errors.phone && <p className="text-red-500 text-[10px] font-bold ml-1 flex items-center gap-1"><AlertCircle className="w-3 h-3" /> {errors.phone}</p>}
                                         </div>
+                                    </div>
+                                    <div className="space-y-2">
+                                        <Label className={`font-bold ml-1 ${errors.email ? "text-red-500" : "text-slate-600"}`}>
+                                            Official Email Address
+                                        </Label>
+                                        <Input
+                                            type="email"
+                                            placeholder="e.g. contact@company.com"
+                                            className={`h-12 bg-slate-50 border-slate-100 rounded-xl px-4 ${errors.email ? "border-red-500 ring-red-500" : ""}`}
+                                            value={email}
+                                            onChange={(e) => handleFieldChange("email", e.target.value, setEmail)}
+                                            required
+                                        />
+                                        {errors.email && <p className="text-red-500 text-[10px] font-bold ml-1 flex items-center gap-1"><AlertCircle className="w-3 h-3" /> {errors.email}</p>}
                                     </div>
 
                                     <div className="space-y-4">
-                                        <Label className="text-slate-600 font-bold ml-1">Select Required Services</Label>
+                                        <Label className={`font-bold ml-1 ${errors.requirements ? "text-red-500" : "text-slate-600"}`}>
+                                            Select Required Services
+                                        </Label>
                                         <div className="flex flex-wrap gap-2">
                                             {serviceTypes.map((type) => (
                                                 <button
@@ -237,6 +271,7 @@ export const CorporateInquiryForm = ({ isOpen, onClose }: { isOpen: boolean; onC
                                                 </button>
                                             ))}
                                         </div>
+                                        {errors.requirements && <p className="text-red-500 text-[10px] font-bold ml-1 flex items-center gap-1"><AlertCircle className="w-3 h-3" /> {errors.requirements}</p>}
 
                                         {requirements.length > 0 && (
                                             <div className="p-4 bg-slate-50 rounded-[1.5rem] space-y-4 animate-in fade-in slide-in-from-top-2">

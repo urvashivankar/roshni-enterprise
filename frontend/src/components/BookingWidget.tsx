@@ -1,7 +1,8 @@
-
 import { getApiUrl } from "@/config";
 import { useState, useRef } from "react";
-import { Calendar as CalendarIcon, Clock, User, Phone, MapPin, Wrench, CheckCircle2, Zap } from "lucide-react";
+import { useToast } from "@/components/ui/use-toast";
+import { Loader2, AlertCircle, Calendar as CalendarIcon, Clock, User, Phone, MapPin, Wrench, CheckCircle2, Zap } from "lucide-react";
+import { bookingSchema, validateSingleField } from "@/lib/validation";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -21,8 +22,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { useToast } from "@/components/ui/use-toast";
-import { Loader2 } from "lucide-react";
 
 export const BookingWidget = ({ initialService }: { initialService?: string }) => {
   const [selectedService, setSelectedService] = useState(initialService || "");
@@ -33,22 +32,14 @@ export const BookingWidget = ({ initialService }: { initialService?: string }) =
   const [phone, setPhone] = useState("");
   const [area, setArea] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [errors, setErrors] = useState<Record<string, string>>({});
   const { toast } = useToast();
-  const [isInitialSet, setIsInitialSet] = useState(false);
 
-  // Sync initialService when it changes (e.g., user clicks another Book Now button)
-  useState(() => {
-    if (initialService) {
-      setSelectedService(initialService);
-    }
-  });
-
-  // Since we are using a functional component and want to react to prop changes
-  const lastInitialService = useRef(initialService);
-  if (lastInitialService.current !== initialService) {
-    setSelectedService(initialService || "");
-    lastInitialService.current = initialService;
-  }
+  const handleFieldChange = (field: string, value: string, setter: (val: string) => void) => {
+    setter(value);
+    const error = validateSingleField(bookingSchema, field, value);
+    setErrors(prev => ({ ...prev, [field]: error }));
+  };
 
   const services = [
     "Lite Refresh Service",
@@ -80,10 +71,27 @@ export const BookingWidget = ({ initialService }: { initialService?: string }) =
   ];
 
   const handleBooking = async () => {
-    if (!selectedService || !selectedDate || !selectedTime || !name || !phone || !area) {
+    const formData = {
+      service: selectedService,
+      date: selectedDate,
+      time: selectedTime,
+      name,
+      phone,
+      area
+    };
+
+    const result = bookingSchema.safeParse(formData);
+
+    if (!result.success) {
+      const fieldErrors: Record<string, string> = {};
+      result.error.errors.forEach(err => {
+        if (err.path[0]) fieldErrors[err.path[0] as string] = err.message;
+      });
+      setErrors(fieldErrors);
+
       toast({
-        title: "Missing Information",
-        description: "Please fill in all details to book your service.",
+        title: "Missing or Invalid Information",
+        description: "Please check the form for errors before booking.",
         variant: "destructive",
       });
       return;
@@ -93,7 +101,6 @@ export const BookingWidget = ({ initialService }: { initialService?: string }) =
 
     try {
       const token = localStorage.getItem('token');
-      // Use getApiUrl to ensure we hit the correct backend (Render)
       const apiUrl = getApiUrl('/api/bookings');
 
       const response = await fetch(apiUrl, {
@@ -102,20 +109,12 @@ export const BookingWidget = ({ initialService }: { initialService?: string }) =
           'Content-Type': 'application/json',
           ...(token ? { 'Authorization': `Bearer ${token}` } : {})
         },
-        body: JSON.stringify({
-          service: selectedService,
-          date: selectedDate,
-          time: selectedTime,
-          name,
-          phone,
-          area
-        }),
+        body: JSON.stringify(formData),
       });
 
       if (response.ok) {
         setIsDialogOpen(true);
       } else {
-        // Robust error handling for non-JSON responses (HTML 404s etc)
         const contentType = response.headers.get("content-type");
         let errorMessage = 'Failed to submit booking';
 
@@ -223,19 +222,21 @@ export const BookingWidget = ({ initialService }: { initialService?: string }) =
                           ))}
                         </SelectContent>
                       </Select>
+                      {errors.service && <p className="text-red-500 text-[10px] font-bold ml-1 flex items-center gap-1"><AlertCircle className="w-3 h-3" /> {errors.service}</p>}
                     </div>
 
                     <div className="space-y-2">
-                      <Label htmlFor="date" className="text-slate-700 font-semibold mb-2 block">Select Date</Label>
+                      <Label htmlFor="date" className={`font-semibold mb-2 block ${errors.date ? "text-red-500" : "text-slate-700"}`}>Select Date</Label>
                       <div className="relative">
                         <Input
                           type="date"
                           id="date"
-                          className="bg-slate-50 border-slate-200 h-12 rounded-xl px-4 focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all cursor-pointer"
+                          className={`bg-slate-50 border-slate-200 h-12 rounded-xl px-4 focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all cursor-pointer ${errors.date ? "border-red-500 ring-red-500" : ""}`}
                           value={selectedDate}
-                          onChange={(e) => setSelectedDate(e.target.value)}
+                          onChange={(e) => handleFieldChange("date", e.target.value, setSelectedDate)}
                         />
                       </div>
+                      {errors.date && <p className="text-red-500 text-[10px] font-bold ml-1 flex items-center gap-1"><AlertCircle className="w-3 h-3" /> {errors.date}</p>}
                     </div>
                   </div>
 
@@ -245,60 +246,65 @@ export const BookingWidget = ({ initialService }: { initialService?: string }) =
                       {timeSlots.map((slot) => (
                         <button
                           key={slot}
-                          onClick={() => setSelectedTime(slot)}
+                          onClick={() => handleFieldChange("time", slot, setSelectedTime)}
                           className={`px-4 py-3 text-sm font-medium rounded-xl transition-all duration-200 border-2 ${selectedTime === slot
                             ? "bg-blue-50 border-blue-600 text-blue-700 shadow-md"
-                            : "bg-slate-50 border-transparent text-slate-600 hover:border-slate-200 hover:bg-slate-100"
+                            : errors.time ? "bg-slate-50 border-red-500/20 text-slate-600 hover:border-red-500/40"
+                              : "bg-slate-50 border-transparent text-slate-600 hover:border-slate-200 hover:bg-slate-100"
                             }`}
                         >
                           {slot}
                         </button>
                       ))}
                     </div>
+                    {errors.time && <p className="text-red-500 text-[10px] font-bold ml-1 flex items-center gap-1"><AlertCircle className="w-3 h-3" /> {errors.time}</p>}
                   </div>
 
                   <div className="space-y-6 pt-4 border-t border-slate-100">
                     <div className="grid md:grid-cols-2 gap-6">
                       <div className="space-y-2">
-                        <Label htmlFor="name" className="text-slate-700 font-semibold">Full Name</Label>
+                        <Label htmlFor="name" className={`font-semibold ${errors.name ? "text-red-500" : "text-slate-700"}`}>Full Name</Label>
                         <div className="relative">
                           <User className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
                           <Input
                             id="name"
                             placeholder="Your name"
-                            className="bg-slate-50 border-slate-200 h-12 pl-10 rounded-xl focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all"
+                            className={`bg-slate-50 border-slate-200 h-12 pl-10 rounded-xl focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all ${errors.name ? "border-red-500 ring-red-500" : ""}`}
                             value={name}
-                            onChange={(e) => setName(e.target.value)}
+                            onChange={(e) => handleFieldChange("name", e.target.value, setName)}
                           />
                         </div>
+                        {errors.name && <p className="text-red-500 text-[10px] font-bold ml-1 flex items-center gap-1"><AlertCircle className="w-3 h-3" /> {errors.name}</p>}
                       </div>
                       <div className="space-y-2">
-                        <Label htmlFor="phone" className="text-slate-700 font-semibold">Phone Number</Label>
+                        <Label htmlFor="phone" className={`font-semibold ${errors.phone ? "text-red-500" : "text-slate-700"}`}>Phone Number</Label>
                         <div className="relative">
                           <Phone className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
                           <Input
                             id="phone"
                             placeholder="10-digit number"
-                            className="bg-slate-50 border-slate-200 h-12 pl-10 rounded-xl focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all"
+                            className={`bg-slate-50 border-slate-200 h-12 pl-10 rounded-xl focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all ${errors.phone ? "border-red-500 ring-red-500" : ""}`}
                             value={phone}
-                            onChange={(e) => setPhone(e.target.value)}
+                            onChange={(e) => handleFieldChange("phone", e.target.value, setPhone)}
                           />
                         </div>
+                        {errors.phone && <p className="text-red-500 text-[10px] font-bold ml-1 flex items-center gap-1"><AlertCircle className="w-3 h-3" /> {errors.phone}</p>}
                       </div>
                     </div>
 
                     <div className="space-y-2">
-                      <Label htmlFor="area" className="text-slate-700 font-semibold">Service Area / Full Address</Label>
+                      <Label htmlFor="area" className={`font-semibold ${errors.area ? "text-red-500" : "text-slate-700"}`}>Service Area / Full Address</Label>
                       <div className="relative">
                         <MapPin className="absolute left-3 top-4 w-4 h-4 text-slate-400" />
                         <Input
                           id="area"
                           placeholder="E.g. Alkapuri, Vadodara"
-                          className="bg-slate-50 border-slate-200 h-12 pl-10 rounded-xl focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all"
+                          className={`bg-slate-50 border-slate-200 h-12 pl-10 rounded-xl focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all ${errors.area ? "border-red-500 ring-red-500" : ""}`}
                           value={area}
-                          onChange={(e) => setArea(e.target.value)}
+                          onChange={(e) => handleFieldChange("area", e.target.value, setArea)}
                         />
                       </div>
+                      {errors.area && <p className="text-red-500 text-[10px] font-bold ml-1 flex items-center gap-1"><AlertCircle className="w-3 h-3" /> {errors.area}</p>}
                     </div>
                   </div>
 

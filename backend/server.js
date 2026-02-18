@@ -4,9 +4,17 @@ const { Server } = require('socket.io');
 const mongoose = require('mongoose');
 const cors = require('cors');
 const path = require('path');
+const helmet = require('helmet');
+const morgan = require('morgan');
+const { rateLimiter } = require('./middleware/rateLimiter');
 require('dotenv').config();
 
 const app = express();
+app.use(helmet({
+    crossOriginResourcePolicy: false, // Required for static uploads to work if on same domain
+}));
+app.use(morgan('dev'));
+app.use(rateLimiter); // Apply global rate limiting
 const server = http.createServer(app);
 const PORT = process.env.PORT || 5000;
 
@@ -45,6 +53,10 @@ app.use((req, res, next) => {
     if (req.method === 'OPTIONS') {
         return res.status(200).end();
     }
+
+    // Simple Request Logger
+    console.log(`[${new Date().toISOString()}] ${req.method} ${req.url}`);
+
     next();
 });
 
