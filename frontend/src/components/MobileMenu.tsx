@@ -1,12 +1,10 @@
 import { useState } from "react";
-import { Menu, X, LayoutDashboard, LogIn, LogOut, UserPlus } from "lucide-react";
+import { Menu, X, LayoutDashboard, LogIn, LogOut, UserPlus, ChevronRight } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import {
   Sheet,
   SheetContent,
-  SheetHeader,
-  SheetTitle,
   SheetTrigger,
 } from "@/components/ui/sheet";
 import BrandLogo from "./BrandLogo";
@@ -23,7 +21,6 @@ export const MobileMenu = ({ isLoggedIn, onLogout, onBookingClick }: MobileMenuP
 
   const handleLogout = () => {
     localStorage.removeItem('token');
-    // Force a re-render or state update if passed from parent
     if (onLogout) onLogout();
     setIsOpen(false);
     navigate('/');
@@ -32,7 +29,10 @@ export const MobileMenu = ({ isLoggedIn, onLogout, onBookingClick }: MobileMenuP
   const handleNavClick = (href: string) => {
     setIsOpen(false);
     if (href.startsWith('#')) {
-      document.getElementById(href.substring(1))?.scrollIntoView({ behavior: 'smooth' });
+      const element = document.getElementById(href.substring(1));
+      if (element) {
+        element.scrollIntoView({ behavior: 'smooth' });
+      }
     }
   };
 
@@ -45,67 +45,71 @@ export const MobileMenu = ({ isLoggedIn, onLogout, onBookingClick }: MobileMenuP
     <Sheet open={isOpen} onOpenChange={setIsOpen}>
       <SheetTrigger asChild>
         <button
-          className="lg:hidden p-2 text-slate-900 hover:text-blue-600 transition-colors"
+          className="lg:hidden p-2 text-slate-900 active:scale-95 transition-all"
           aria-label="Open menu"
         >
-          {isOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+          <Menu className="w-6 h-6" />
         </button>
       </SheetTrigger>
+
       <SheetContent
         side="right"
-        className="w-full sm:w-[400px] bg-white border-l border-slate-50 p-0 overflow-y-auto"
+        className="w-full sm:w-[360px] bg-white border-l border-slate-100 p-0 flex flex-col"
       >
-        {/* Attractive Graphic Header */}
-        <div className="relative h-48 w-full overflow-hidden">
-          <img
-            src="https://images.unsplash.com/photo-1599933023848-bfff2346c4df?q=80&w=2070&auto=format&fit=crop"
-            className="w-full h-full object-cover"
-            alt="Premium AC Service"
-          />
-          <div className="absolute inset-x-0 bottom-0 h-24 bg-gradient-to-t from-white to-transparent"></div>
-          <div className="absolute top-6 left-8">
-            <BrandLogo size="sm" />
+        {/* Fixed Header Bar - 56px height */}
+        <div className="h-[56px] min-h-[56px] flex items-center justify-between px-4 border-b border-slate-100 bg-white sticky top-0 z-50">
+          <div className="flex items-center -ml-1">
+            <BrandLogo size="xs" />
           </div>
+          <button
+            onClick={() => setIsOpen(false)}
+            className="w-11 h-11 flex items-center justify-center -mr-2 text-slate-500 hover:text-slate-900 active:bg-slate-50 rounded-full transition-colors"
+            aria-label="Close menu"
+          >
+            <X className="w-6 h-6" />
+          </button>
         </div>
 
-        <div className="flex flex-col h-full px-8 pb-8 -mt-6">
-          {/* Navigation Links */}
-          <div className="flex flex-col space-y-1 flex-1 relative z-10">
-            {['About', 'Services', 'Pricing', 'Reviews', 'Contact'].map((item, idx) => (
+        {/* Navigation Section */}
+        <div className="flex-1 overflow-y-auto pt-6 px-6">
+          <div className="flex flex-col space-y-1">
+            {['About', 'Services', 'Pricing', 'Reviews', 'Contact'].map((item) => (
               <button
                 key={item}
                 onClick={() => handleNavClick(`#${item.toLowerCase()}`)}
-                className="text-slate-900 font-bold text-3xl py-3 text-left hover:text-blue-600 transition-colors tracking-tight animate-in fade-in slide-in-from-right duration-500"
-                style={{ animationDelay: `${idx * 50}ms` }}
+                className="group flex items-center justify-between py-4 text-slate-900 font-semibold text-xl border-b border-slate-50 last:border-0 hover:text-blue-600 transition-colors"
               >
-                {item}
+                <span>{item}</span>
+                <ChevronRight className="w-5 h-5 text-slate-300 group-hover:text-blue-600 transform group-hover:translate-x-1 transition-all" />
               </button>
             ))}
           </div>
 
           {/* Auth Section */}
-          <div className="space-y-4 pt-8 border-t border-slate-100">
+          <div className="mt-10 pt-10 border-t border-slate-100">
             {isLoggedIn ? (
-              <>
+              <div className="space-y-3">
                 <Link to="/dashboard" onClick={() => setIsOpen(false)}>
                   <Button
                     variant="ghost"
-                    className="w-full justify-start h-12 text-lg font-bold text-slate-600 hover:text-blue-600 hover:bg-transparent px-0"
+                    className="w-full justify-start h-12 text-lg font-bold text-slate-600 hover:text-blue-600 hover:bg-slate-50 px-3 rounded-xl"
                   >
-                    My Dashboard
+                    <LayoutDashboard className="mr-3 h-5 w-5" />
+                    Dashboard
                   </Button>
                 </Link>
                 <Button
                   onClick={handleLogout}
                   variant="ghost"
-                  className="w-full justify-start h-12 text-lg font-bold text-red-500 hover:text-red-700 hover:bg-transparent px-0"
+                  className="w-full justify-start h-12 text-lg font-bold text-red-500 hover:text-red-700 hover:bg-red-50 px-3 rounded-xl"
                 >
+                  <LogOut className="mr-3 h-5 w-5" />
                   Log Out
                 </Button>
-              </>
+              </div>
             ) : (
               <div className="grid grid-cols-2 gap-4">
-                <Link to="/login" onClick={() => setIsOpen(false)}>
+                <Link to="/login" onClick={() => setIsOpen(false)} className="w-full">
                   <Button
                     variant="outline"
                     className="w-full h-12 text-base font-bold border-slate-200 hover:bg-slate-50 rounded-xl"
@@ -113,7 +117,7 @@ export const MobileMenu = ({ isLoggedIn, onLogout, onBookingClick }: MobileMenuP
                     Login
                   </Button>
                 </Link>
-                <Link to="/signup" onClick={() => setIsOpen(false)}>
+                <Link to="/signup" onClick={() => setIsOpen(false)} className="w-full">
                   <Button
                     className="w-full h-12 text-base font-bold bg-blue-600 hover:bg-blue-700 text-white rounded-xl"
                   >
@@ -122,19 +126,20 @@ export const MobileMenu = ({ isLoggedIn, onLogout, onBookingClick }: MobileMenuP
                 </Link>
               </div>
             )}
-
-            {/* Book CTA */}
-            <Button
-              onClick={handleBooking}
-              className="w-full h-14 text-lg font-black bg-amber-400 hover:bg-amber-500 text-slate-900 rounded-xl shadow-lg shadow-amber-400/20 active:scale-95 transition-all mt-4"
-            >
-              Book Service Now
-            </Button>
-
-            <p className="text-center text-xs text-slate-400 font-bold mt-6 tracking-widest uppercase">
-              Roshni Enterprise
-            </p>
           </div>
+        </div>
+
+        {/* Fixed Bottom CTA */}
+        <div className="p-6 bg-white border-t border-slate-50 shadow-[0_-8px_24px_rgba(0,0,0,0.03)]">
+          <Button
+            onClick={handleBooking}
+            className="w-full h-14 text-lg font-bold bg-amber-400 hover:bg-amber-500 text-slate-900 rounded-xl shadow-lg shadow-amber-400/20 active:scale-[0.98] transition-all"
+          >
+            Book Service Now
+          </Button>
+          <p className="text-center text-[10px] text-slate-400 font-bold mt-4 tracking-[0.2em] uppercase">
+            Roshni Enterprise • Vadodara
+          </p>
         </div>
       </SheetContent>
     </Sheet>
