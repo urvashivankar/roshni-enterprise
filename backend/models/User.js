@@ -9,16 +9,22 @@ const UserSchema = new mongoose.Schema({
         lowercase: true,
         match: [/^\w+([.-]?\w+)*@\w+([.-]?\w+)*(\.\w{2,3})+$/, 'Please fill a valid email address']
     },
+    phoneNumber: {
+        type: String,
+        required: [true, 'Phone number is required'],
+        unique: true,
+        trim: true,
+        match: [/^\d{10}$/, 'Please fill a valid 10-digit phone number']
+    },
     password: {
         type: String,
-        required: [true, 'Password is required'],
-        minlength: [6, 'Password must be at least 6 characters']
+        required: [true, 'Password is required']
     },
     role: {
         type: String,
         default: 'customer',
         enum: ['customer', 'admin']
     }
-});
+}, { timestamps: true });
 
 module.exports = mongoose.model('User', UserSchema);

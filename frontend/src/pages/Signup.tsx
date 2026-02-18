@@ -4,13 +4,14 @@ import { useNavigate, Link } from 'react-router-dom';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { Card } from "@/components/ui/card";
 import { useToast } from "@/components/ui/use-toast";
-import { UserPlus, Mail, Lock, Loader2, ArrowRight } from 'lucide-react';
+import { UserPlus, Mail, Lock, Phone, Loader2, ArrowRight, CheckCircle2 } from 'lucide-react';
 import BrandLogo from '@/components/BrandLogo';
 
 const Signup = () => {
     const [email, setEmail] = useState('');
+    const [phoneNumber, setPhoneNumber] = useState('');
     const [password, setPassword] = useState('');
     const [confirmPassword, setConfirmPassword] = useState('');
     const [isLoading, setIsLoading] = useState(false);
@@ -19,6 +20,16 @@ const Signup = () => {
 
     const handleSignup = async (e: React.FormEvent) => {
         e.preventDefault();
+
+        // Strict 8-character password check
+        if (password.length !== 8) {
+            toast({
+                title: "Invalid Password",
+                description: "Password must be exactly 8 characters.",
+                variant: "destructive"
+            });
+            return;
+        }
 
         if (password !== confirmPassword) {
             toast({
@@ -29,29 +40,30 @@ const Signup = () => {
             return;
         }
 
+        if (phoneNumber.length !== 10) {
+            toast({
+                title: "Invalid Phone",
+                description: "Please enter a valid 10-digit phone number.",
+                variant: "destructive"
+            });
+            return;
+        }
+
         setIsLoading(true);
         try {
             const response = await fetch(getApiUrl('/api/auth/register'), {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ email, password })
+                body: JSON.stringify({ email, phoneNumber, password })
             });
 
-            const contentType = response.headers.get("content-type");
-            let data;
-            if (contentType && contentType.includes("application/json")) {
-                data = await response.json();
-            } else {
-                const text = await response.text();
-                console.error("Non-JSON response:", text);
-                throw new Error(`Server Error: ${response.status} ${response.statusText}. Check console for details.`);
-            }
+            const data = await response.json();
 
             if (response.ok) {
                 localStorage.setItem('token', data.token);
                 toast({
-                    title: "Welcome! Account created.",
-                    description: "You've successfully signed up for Roshni Enterprise.",
+                    title: "Welcome aboard!",
+                    description: "Your account has been created successfully.",
                 });
                 navigate('/');
             } else {
@@ -59,7 +71,7 @@ const Signup = () => {
             }
         } catch (error: any) {
             toast({
-                title: "Error",
+                title: "Registration Failed",
                 description: error.message || "Something went wrong",
                 variant: "destructive"
             });
@@ -69,132 +81,157 @@ const Signup = () => {
     };
 
     return (
-        <div className="min-h-screen flex items-center justify-center relative overflow-hidden bg-slate-900">
-            {/* Background Image with Overlay */}
-            <div className="absolute inset-0 z-0">
-                <img
-                    src="https://images.unsplash.com/photo-1531053270060-6643c5e707fe?q=80&w=2070&auto=format&fit=crop"
-                    alt="Corporate AC Systems"
-                    className="w-full h-full object-cover opacity-40"
-                />
-                <div className="absolute inset-0 bg-gradient-to-br from-blue-900/80 via-slate-900/90 to-black/90"></div>
+        <div className="min-h-screen flex items-center justify-center bg-white p-4 font-sans selection:bg-blue-100 selection:text-blue-900">
+            {/* Minimal Geometric Decorations */}
+            <div className="fixed top-0 left-0 w-full h-full pointer-events-none overflow-hidden -z-10">
+                <div className="absolute top-[-10%] right-[-10%] w-[40%] h-[40%] bg-blue-50 rounded-full blur-[120px] opacity-60"></div>
+                <div className="absolute bottom-[-10%] left-[-10%] w-[40%] h-[40%] bg-amber-50 rounded-full blur-[120px] opacity-60"></div>
             </div>
 
-            <div className="container relative z-10 mx-auto px-4 flex justify-center items-center">
-                <Card className="w-full max-w-5xl bg-white/5 backdrop-blur-xl border border-white/10 shadow-2xl rounded-[2.5rem] overflow-hidden grid lg:grid-cols-2">
+            <div className="w-full max-w-[1100px] grid lg:grid-cols-2 gap-0 overflow-hidden rounded-[2.5rem] bg-white border border-slate-100 shadow-[0_32px_64px_-16px_rgba(0,0,0,0.08)]">
 
-                    {/* Left Side: Brand Promo (Visible on Large Screens) */}
-                    <div className="hidden lg:flex flex-col justify-between p-12 bg-blue-600/10 border-r border-white/5">
-                        <div className="space-y-6">
-                            <Link to="/" className="flex items-center space-x-3 group">
-                                <BrandLogo size="md" variant="light" />
-                            </Link>
+                {/* Visual Side: Modern & Minimal */}
+                <div className="hidden lg:flex flex-col justify-between p-16 bg-slate-950 text-white relative overflow-hidden">
+                    <div className="absolute inset-0 opacity-20">
+                        <img
+                            src="https://images.unsplash.com/photo-1581094288338-2314dddb7ecc?q=80&w=2070&auto=format&fit=crop"
+                            className="w-full h-full object-cover grayscale"
+                            alt="Background"
+                        />
+                        <div className="absolute inset-0 bg-gradient-to-br from-blue-900 via-transparent to-transparent"></div>
+                    </div>
 
-                            <div className="pt-12 space-y-4">
-                                <h1 className="text-5xl font-black text-white leading-tight">
-                                    Join the <br />
-                                    <span className="text-cyan-400">future of comfort.</span>
+                    <div className="relative z-10 flex flex-col h-full justify-between">
+                        <div>
+                            <BrandLogo size="md" variant="light" />
+                            <div className="mt-20 space-y-6">
+                                <h1 className="text-6xl font-black leading-[1.1] tracking-tight text-white">
+                                    Start your <br />
+                                    <span className="text-blue-400 font-medium italic">cooling journey</span> <br />
+                                    with us.
                                 </h1>
-                                <p className="text-slate-300 text-lg font-medium max-w-sm">
-                                    Create an account to track your service history, schedule appointments, and get exclusive offers.
+                                <p className="text-slate-400 text-lg font-medium max-w-sm leading-relaxed">
+                                    Trusted by thousands of homes in Vadodara for reliable AC services.
                                 </p>
                             </div>
                         </div>
 
-                        <div className="space-y-4">
-                            <div className="flex items-center space-x-4 text-white/70">
-                                <div className="w-10 h-10 bg-white/10 rounded-full flex items-center justify-center">
-                                    <UserPlus className="w-5 h-5 text-cyan-400" />
+                        <div className="space-y-8">
+                            <div className="flex items-center gap-4 p-5 rounded-2xl bg-white/5 border border-white/10 backdrop-blur-sm">
+                                <div className="w-12 h-12 rounded-xl bg-blue-500 flex items-center justify-center shrink-0">
+                                    <CheckCircle2 className="w-6 h-6 text-white" />
                                 </div>
-                                <span className="font-bold">Fast & Free Registration</span>
+                                <div>
+                                    <p className="font-bold text-white">Priority Scheduling</p>
+                                    <p className="text-sm text-slate-400">Get faster response times as a member.</p>
+                                </div>
                             </div>
-                            <p className="text-xs text-slate-400 font-bold uppercase tracking-widest">© 2024 Roshni Enterprise • Trusted Excellence</p>
+                            <p className="text-xs font-bold text-slate-500 tracking-[0.2em] uppercase">Roshni Enterprise • Est. 2014</p>
                         </div>
                     </div>
+                </div>
 
-                    {/* Right Side: Signup Form */}
-                    <div className="p-8 md:p-12 lg:p-16 flex flex-col justify-center bg-white/10">
-                        <div className="text-center lg:text-left space-y-4 mb-10">
-                            <div className="lg:hidden mb-6 flex justify-center">
-                                <BrandLogo size="md" variant="light" />
-                            </div>
-                            <h2 className="text-3xl md:text-4xl font-black text-white tracking-tight">Create Account</h2>
-                            <p className="text-slate-400 font-medium">Join Roshni Enterprise for a smarter booking experience.</p>
+                {/* Form Side: Clean & Spacious */}
+                <div className="p-8 md:p-16 lg:p-20 flex flex-col justify-center">
+                    <div className="mb-12 space-y-3">
+                        <div className="lg:hidden mb-10">
+                            <BrandLogo size="sm" />
                         </div>
+                        <h2 className="text-4xl font-black text-slate-900 tracking-tight">Create Account</h2>
+                        <p className="text-slate-500 font-medium">Please fill in your details to get started.</p>
+                    </div>
 
-                        <form onSubmit={handleSignup} className="space-y-6">
+                    <form onSubmit={handleSignup} className="space-y-6">
+                        <div className="grid md:grid-cols-2 gap-6">
                             <div className="space-y-2">
-                                <Label htmlFor="email" className="text-slate-300 font-bold ml-1">Email Address</Label>
+                                <Label htmlFor="email" className="text-slate-600 font-bold text-sm ml-1">Email</Label>
                                 <div className="relative group">
-                                    <Mail className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-500 group-focus-within:text-cyan-400 transition-colors" />
+                                    <Mail className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-400 group-focus-within:text-blue-500 transition-colors" />
                                     <Input
                                         id="email"
                                         type="email"
-                                        placeholder="name@example.com"
-                                        className="pl-12 h-14 bg-white/5 border-white/10 text-white placeholder:text-slate-600 rounded-2xl focus:bg-white/10 focus:border-cyan-500/50 transition-all text-lg"
+                                        placeholder="alex@example.com"
+                                        className="pl-12 h-14 bg-slate-50 border-transparent focus:bg-white focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 rounded-2xl transition-all text-base font-medium"
                                         value={email}
                                         onChange={(e) => setEmail(e.target.value)}
                                         required
                                     />
                                 </div>
                             </div>
-
                             <div className="space-y-2">
-                                <Label htmlFor="password" text-slate-300 font-bold>Password</Label>
+                                <Label htmlFor="phone" className="text-slate-600 font-bold text-sm ml-1">Phone Number</Label>
                                 <div className="relative group">
-                                    <Lock className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-500 group-focus-within:text-cyan-400 transition-colors" />
+                                    <Phone className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-400 group-focus-within:text-blue-500 transition-colors" />
                                     <Input
-                                        id="password"
-                                        type="password"
-                                        placeholder="••••••••"
-                                        className="pl-12 pr-12 h-14 bg-white/5 border-white/10 text-white placeholder:text-slate-600 rounded-2xl focus:bg-white/10 focus:border-cyan-500/50 transition-all text-lg"
-                                        value={password}
-                                        onChange={(e) => setPassword(e.target.value)}
+                                        id="phone"
+                                        type="tel"
+                                        placeholder="98765 43210"
+                                        className="pl-12 h-14 bg-slate-50 border-transparent focus:bg-white focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 rounded-2xl transition-all text-base font-medium"
+                                        value={phoneNumber}
+                                        onChange={(e) => setPhoneNumber(e.target.value.replace(/\D/g, '').slice(0, 10))}
                                         required
                                     />
                                 </div>
                             </div>
+                        </div>
 
-                            <div className="space-y-2">
-                                <Label htmlFor="confirmPassword" text-slate-300 font-bold>Confirm Password</Label>
-                                <div className="relative group">
-                                    <Lock className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-500 group-focus-within:text-cyan-400 transition-colors" />
-                                    <Input
-                                        id="confirmPassword"
-                                        type="password"
-                                        placeholder="••••••••"
-                                        className="pl-12 pr-12 h-14 bg-white/5 border-white/10 text-white placeholder:text-slate-600 rounded-2xl focus:bg-white/10 focus:border-cyan-500/50 transition-all text-lg"
-                                        value={confirmPassword}
-                                        onChange={(e) => setConfirmPassword(e.target.value)}
-                                        required
-                                    />
-                                </div>
+                        <div className="space-y-2">
+                            <Label htmlFor="password" className="text-slate-600 font-bold text-sm ml-1">Password (Exactly 8 chars)</Label>
+                            <div className="relative group">
+                                <Lock className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-400 group-focus-within:text-blue-500 transition-colors" />
+                                <Input
+                                    id="password"
+                                    type="password"
+                                    placeholder="••••••••"
+                                    maxLength={8}
+                                    className="pl-12 h-14 bg-slate-50 border-transparent focus:bg-white focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 rounded-2xl transition-all text-base font-medium"
+                                    value={password}
+                                    onChange={(e) => setPassword(e.target.value)}
+                                    required
+                                />
                             </div>
+                        </div>
 
+                        <div className="space-y-2">
+                            <Label htmlFor="confirmPassword" className="text-slate-600 font-bold text-sm ml-1">Confirm Password</Label>
+                            <div className="relative group">
+                                <Lock className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-400 group-focus-within:text-blue-500 transition-colors" />
+                                <Input
+                                    id="confirmPassword"
+                                    type="password"
+                                    placeholder="••••••••"
+                                    maxLength={8}
+                                    className="pl-12 h-14 bg-slate-50 border-transparent focus:bg-white focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 rounded-2xl transition-all text-base font-medium"
+                                    value={confirmPassword}
+                                    onChange={(e) => setConfirmPassword(e.target.value)}
+                                    required
+                                />
+                            </div>
+                        </div>
+
+                        <div className="pt-4">
                             <Button
                                 type="submit"
                                 disabled={isLoading}
-                                className="w-full bg-blue-600 hover:bg-blue-500 text-white h-14 rounded-2xl font-black text-lg shadow-xl shadow-blue-600/20 active:scale-[0.98] transition-all group"
+                                className="w-full bg-slate-950 hover:bg-slate-900 text-white h-16 rounded-[1.25rem] font-bold text-lg shadow-[0_20px_40px_-12px_rgba(0,0,0,0.2)] active:scale-[0.98] transition-all group overflow-hidden relative"
                             >
                                 {isLoading ? (
                                     <Loader2 className="w-6 h-6 animate-spin mx-auto text-white" />
                                 ) : (
-                                    <>
-                                        Sign Up Now
-                                        <ArrowRight className="ml-2 w-5 h-5 group-hover:translate-x-1 transition-transform" />
-                                    </>
+                                    <span className="flex items-center justify-center gap-2">
+                                        Create Account
+                                        <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
+                                    </span>
                                 )}
                             </Button>
-                        </form>
-
-                        <div className="text-center mt-12">
-                            <p className="text-slate-400 font-medium">
-                                Already have an account?
-                                <Link to="/login" className="text-cyan-400 hover:text-cyan-300 ml-2 font-black transition-colors">Login here</Link>
-                            </p>
                         </div>
-                    </div>
-                </Card>
+                    </form>
+
+                    <p className="mt-12 text-center text-slate-500 font-medium">
+                        Already have an account?
+                        <Link to="/login" className="text-blue-600 hover:text-blue-700 font-black ml-2 underline underline-offset-4 decoration-2 decoration-blue-100 hover:decoration-blue-500 transition-all">Sign in</Link>
+                    </p>
+                </div>
             </div>
         </div>
     );

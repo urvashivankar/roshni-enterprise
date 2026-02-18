@@ -11,7 +11,6 @@ import { BookingWidget } from "@/components/BookingWidget";
 import { CorporateInquiryForm } from "@/components/CorporateInquiryForm";
 import { MobileMenu } from "@/components/MobileMenu";
 import { StickyCallButton } from "@/components/StickyCallButton";
-import { WhatsAppButton } from "@/components/WhatsAppButton";
 import { SEOHead } from "@/components/SEOHead";
 import socket from "@/lib/socket";
 
@@ -216,14 +215,17 @@ const Index = () => {
       </div>
 
       {/* Navigation */}
-      <nav className="sticky top-0 z-50 bg-white border-b border-slate-100 shadow-sm">
-        <div className="container mx-auto px-4 py-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center cursor-pointer group">
+      <nav className="sticky top-0 z-50 bg-white/95 backdrop-blur-md border-b border-slate-100 shadow-sm transition-all duration-300">
+        <div className="container mx-auto px-4 py-2 md:py-4">
+          <div className="flex items-center justify-between h-14 md:h-auto">
+
+            {/* Logo - Always Visible */}
+            <div className="flex items-center cursor-pointer group shrink-0">
               <BrandLogo size="md" />
             </div>
 
-            <div className="hidden lg:flex items-center space-x-10">
+            {/* Desktop Navigation */}
+            <div className="hidden lg:flex items-center space-x-8">
               {['About', 'Services', 'Pricing', 'Reviews', 'Contact'].map((item, idx) => (
                 <a
                   key={item}
@@ -236,8 +238,10 @@ const Index = () => {
               ))}
             </div>
 
-            <div className="flex items-center space-x-4">
-              <div className="hidden md:flex items-center space-x-4">
+            {/* Right Side Actions */}
+            <div className="flex items-center gap-3">
+              {/* Desktop Actions - HIDDEN on Mobile */}
+              <div className="hidden lg:flex items-center space-x-4">
                 {isLoggedIn ? (
                   <Link to="/dashboard">
                     <Button variant="ghost" className="text-blue-600 font-bold hover:bg-blue-50">
@@ -261,56 +265,72 @@ const Index = () => {
                 </Button>
               </div>
 
-              <MobileMenu
-                isLoggedIn={isLoggedIn}
-                onLogout={() => setIsLoggedIn(false)}
-                onBookingClick={() => scrollToBooking()}
-              />
+              {/* Mobile Hamburger - Always Visible on Mobile */}
+              <div className="lg:hidden">
+                <MobileMenu
+                  isLoggedIn={isLoggedIn}
+                  onLogout={() => setIsLoggedIn(false)}
+                  onBookingClick={() => scrollToBooking()}
+                />
+              </div>
             </div>
           </div>
         </div>
       </nav>
 
       {/* Hero Section */}
-      <section className="relative pt-12 pb-0 md:pt-20 bg-white overflow-hidden">
+      <section className="relative pt-6 pb-0 md:pt-20 bg-white overflow-hidden">
         <div className="container mx-auto px-4">
-          <div className="grid lg:grid-cols-2 lg:gap-12 items-center">
-            <div className="space-y-8 animate-in fade-in slide-in-from-left duration-700">
-              <div className="space-y-4">
-                <h1 className="text-4xl md:text-5xl lg:text-7xl font-bold text-blue-900 leading-[1.1] tracking-tight">
+          <div className="flex flex-col-reverse lg:grid lg:grid-cols-2 lg:gap-12 items-center">
+
+            {/* Text Content */}
+            <div className="space-y-6 md:space-y-8 animate-in fade-in slide-in-from-left duration-700 mt-8 lg:mt-0 text-center lg:text-left">
+              <div className="space-y-3 md:space-y-4">
+                <h1 className="text-3xl md:text-5xl lg:text-7xl font-bold text-blue-900 leading-[1.1] tracking-tight">
                   Air Conditioning <br />
                   <span className="text-cyan-500">Services in Vadodara</span>
                 </h1>
-                <div className="w-24 h-1.5 bg-cyan-400 rounded-full"></div>
-                <p className="text-lg md:text-xl text-slate-600 font-medium leading-relaxed max-w-xl">
-                  Not just cleaning <span className="text-blue-600 font-bold">we restore cooling performance.</span> Every service is designed around results, ensuring your comfort all year round.
+                <div className="w-16 h-1 md:w-24 md:h-1.5 bg-cyan-400 rounded-full mx-auto lg:mx-0"></div>
+                <p className="text-base md:text-xl text-slate-600 font-medium leading-relaxed max-w-xl mx-auto lg:mx-0">
+                  Book trusted technicians in 60 seconds. <span className="text-blue-600 font-bold">We restore cooling performance.</span>
                 </p>
               </div>
 
-              <div className="flex flex-col sm:flex-row gap-4 animate-in fade-in slide-in-from-bottom duration-1000 delay-300">
+              <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start animate-in fade-in slide-in-from-bottom duration-1000 delay-300">
                 <Button
                   onClick={() => scrollToBooking()}
-                  className="bg-amber-400 hover:bg-amber-500 text-slate-900 px-8 py-7 md:px-10 text-base md:text-lg rounded-xl shadow-xl shadow-amber-400/20 transition-all active:scale-95 font-black uppercase tracking-wider w-full sm:w-auto"
+                  className="bg-amber-400 hover:bg-amber-500 text-slate-900 px-8 py-6 md:py-7 md:px-10 text-lg rounded-xl shadow-xl shadow-amber-400/20 transition-all active:scale-95 font-black uppercase tracking-wider w-full sm:w-auto"
                 >
-                  Request Appointment
+                  Book Service Now
                 </Button>
                 <Button
                   variant="outline"
                   onClick={scrollToServices}
-                  className="border-2 border-cyan-500 text-cyan-600 px-8 py-7 md:px-10 text-base md:text-lg rounded-xl hover:bg-cyan-50 transition-all font-black uppercase tracking-wider w-full sm:w-auto"
+                  className="hidden sm:inline-flex border-2 border-cyan-500 text-cyan-600 px-8 py-6 md:py-7 md:px-10 text-lg rounded-xl hover:bg-cyan-50 transition-all font-black uppercase tracking-wider w-full sm:w-auto"
                 >
                   Our Services
                 </Button>
               </div>
             </div>
 
-            <div className="relative mt-12 lg:mt-0 animate-in fade-in slide-in-from-right duration-700">
+            {/* Image Content - Optimized for Mobile */}
+            <div className="relative w-full lg:mt-0 animate-in fade-in slide-in-from-right duration-700">
               <div className="absolute -inset-4 bg-cyan-100/50 rounded-full blur-3xl -z-10"></div>
+              {/* Desktop Image */}
               <img
                 src="https://img.freepik.com/premium-photo/rear-view-man-using-mobile-phone_35076-12663.jpg?semt=ais_hybrid&w=740&q=80"
                 alt="Customer booking AC service on mobile"
-                className="w-full h-[500px] object-cover rounded-[2.5rem] z-10 shadow-2xl"
+                className="hidden lg:block w-full h-[500px] object-cover rounded-[2.5rem] z-10 shadow-2xl"
               />
+              {/* Mobile Image - Shorter & Optimized */}
+              <div className="block lg:hidden relative rounded-[2rem] overflow-hidden shadow-xl z-10">
+                <div className="absolute inset-0 bg-gradient-to-t from-blue-900/40 to-transparent z-20"></div>
+                <img
+                  src="https://img.freepik.com/premium-photo/rear-view-man-using-mobile-phone_35076-12663.jpg?semt=ais_hybrid&w=740&q=80"
+                  alt="Mobile AC Service"
+                  className="w-full h-64 object-cover object-center"
+                />
+              </div>
             </div>
           </div>
         </div>
@@ -463,7 +483,8 @@ const Index = () => {
               <img
                 src="https://www.airfixacservice.in/wp-content/uploads/2026/01/ac-repair-service-in-faridabad.webp"
                 alt="Expert AC Repair Service"
-                className="w-full h-[600px] object-cover rounded-[3rem] shadow-2xl"
+                loading="lazy"
+                className="w-full h-[600px] object-cover rounded-[3rem] shadow-xl"
               />
               <div className="absolute -bottom-10 -left-10 bg-white p-10 rounded-[2rem] shadow-2xl border border-slate-100">
                 <div className="flex flex-col items-center">
@@ -484,7 +505,8 @@ const Index = () => {
               <img
                 src="https://images.unsplash.com/photo-1497366216548-37526070297c?q=80&w=2069&auto=format&fit=crop"
                 alt="Modern Office AC Setup"
-                className="w-full h-[500px] object-cover rounded-[3rem] shadow-2xl"
+                loading="lazy"
+                className="w-full h-[500px] object-cover rounded-[3rem] shadow-xl"
               />
             </div>
 
@@ -537,7 +559,7 @@ const Index = () => {
           </div>
           <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
             {services.map((service, index) => (
-              <Card key={index} className="group bg-white border-0 shadow-lg hover:shadow-2xl transition-all duration-500 hover:-translate-y-2 overflow-hidden border-b-4 border-transparent hover:border-cyan-500 animate-in fade-in slide-in-from-bottom duration-1000" style={{ animationDelay: `${index * 150}ms` }}>
+              <Card key={index} className="group bg-white border border-slate-100 shadow-sm hover:shadow-xl transition-all duration-300 hover:-translate-y-1 overflow-hidden rounded-[2rem] animate-in fade-in slide-in-from-bottom duration-1000" style={{ animationDelay: `${index * 150}ms` }}>
                 <CardContent className="p-8 md:p-10 space-y-8">
                   <div className="text-5xl md:text-6xl group-hover:scale-110 transition-transform duration-500">{service.icon}</div>
                   <div className="space-y-4">
@@ -568,7 +590,7 @@ const Index = () => {
           </div>
 
           <div className="max-w-5xl mx-auto">
-            <div className="bg-[#0c4a6e] rounded-[3rem] p-12 md:p-20 relative overflow-hidden border border-white/10 shadow-2xl">
+            <div className="bg-[#0c4a6e] rounded-[3rem] p-12 md:p-20 relative overflow-hidden border border-white/10 shadow-xl">
               {reviews.length > 0 && (
                 <div className="relative z-10 text-center space-y-12">
                   <div className="flex justify-center space-x-2">
@@ -746,17 +768,17 @@ const Index = () => {
       </section>
 
       {/* Footer */}
-      <footer className="bg-blue-900 text-white py-20 px-4">
+      <footer className="bg-slate-900 text-white py-16 px-4">
         <div className="container mx-auto">
-          <div className="flex flex-col items-center space-y-12">
-            <div className="flex flex-col items-center text-center space-y-6">
-              <BrandLogo size="lg" variant="light" className="bg-white/5 p-6 rounded-[2.5rem] backdrop-blur-sm border border-white/10" />
-              <p className="text-blue-100 max-w-md font-medium text-lg opacity-80 leading-relaxed">
-                Not just cleaning we restore cooling performance with expert AC installation and repair in Vadodara.
+          <div className="flex flex-col items-center space-y-10">
+            <div className="flex flex-col items-center text-center space-y-4">
+              <BrandLogo size="lg" variant="light" className="opacity-90" />
+              <p className="text-slate-400 max-w-sm font-medium text-base leading-relaxed">
+                Expert AC installation and repair in Vadodara. Restoring comfort, one home at a time.
               </p>
-              <div className="flex space-x-6 h-px w-32 bg-gradient-to-r from-transparent via-cyan-400/30 to-transparent"></div>
-              <p className="text-cyan-400 font-black text-xl tracking-wider">
-                Inquiries: 9727690078 / 9510972650
+              <div className="h-px w-16 bg-white/10 my-4"></div>
+              <p className="text-white font-bold text-lg tracking-wide">
+                9727690078 <span className="text-slate-600 mx-2">/</span> 9510972650
               </p>
             </div>
 
@@ -780,7 +802,6 @@ const Index = () => {
       />
 
       {/* Mobile UX Components */}
-      <WhatsAppButton />
       <StickyCallButton />
     </div>
   );

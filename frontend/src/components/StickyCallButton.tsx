@@ -1,27 +1,38 @@
-import { Phone } from "lucide-react";
+import { Phone, CalendarCheck } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 export const StickyCallButton = () => {
     const phoneNumber = "+919727690078";
 
+    const scrollToBooking = () => {
+        document.getElementById('booking')?.scrollIntoView({ behavior: 'smooth' });
+    };
+
     return (
-        <div className="fixed bottom-0 left-0 right-0 z-40 lg:hidden">
-            <div className="bg-gradient-to-r from-blue-600 to-cyan-500 p-4 shadow-2xl border-t border-white/20">
-                <a href={`tel:${phoneNumber}`} className="block">
+        <div className="fixed bottom-0 left-0 right-0 z-40 lg:hidden mobile-sticky-bar">
+            {/* Glassmorphism Effect */}
+            <div className="bg-white/95 backdrop-blur-md border-t border-slate-100 p-3 shadow-[0_-8px_30px_rgba(0,0,0,0.08)] pb-safe transition-all duration-300">
+                <div className="flex gap-3">
+                    {/* Secondary Action: Call */}
+                    <a href={`tel:${phoneNumber}`} className="flex-1">
+                        <Button
+                            variant="outline"
+                            className="w-full h-12 border-2 border-slate-200 text-slate-700 font-bold rounded-xl active:scale-95 transition-all text-sm"
+                        >
+                            <Phone className="w-4 h-4 mr-2 text-slate-500" />
+                            Call Now
+                        </Button>
+                    </a>
+
+                    {/* Primary Action: Book */}
                     <Button
-                        className="w-full h-16 bg-white hover:bg-blue-50 text-blue-600 font-black text-lg rounded-2xl shadow-xl transition-all active:scale-95 group"
+                        onClick={scrollToBooking}
+                        className="flex-[1.5] h-12 bg-amber-400 hover:bg-amber-500 text-slate-900 font-black rounded-xl shadow-lg shadow-amber-400/20 active:scale-95 transition-all text-sm uppercase tracking-wide"
                     >
-                        <div className="flex items-center justify-center space-x-3">
-                            <div className="w-12 h-12 bg-blue-600 rounded-full flex items-center justify-center animate-pulse">
-                                <Phone className="w-6 h-6 text-white" />
-                            </div>
-                            <div className="flex flex-col items-start">
-                                <span className="text-xs font-medium opacity-60">Call Now for Service</span>
-                                <span className="font-black">{phoneNumber}</span>
-                            </div>
-                        </div>
+                        <CalendarCheck className="w-5 h-5 mr-2" />
+                        Book Service
                     </Button>
-                </a>
+                </div>
             </div>
         </div>
     );

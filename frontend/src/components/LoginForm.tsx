@@ -1,23 +1,19 @@
-
 import { getApiUrl } from "@/config";
 import { useState } from "react";
-// ... existing imports which are lines 3-12 in original file
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Eye, EyeOff, User, Lock } from "lucide-react";
-
+import { Eye, EyeOff, User, Lock, Loader2, ArrowRight } from "lucide-react";
 import { useNavigate, Link } from "react-router-dom";
 import { useToast } from "@/components/ui/use-toast";
-import { Loader2 } from "lucide-react";
 import BrandLogo from "./BrandLogo";
 
 export const LoginForm = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [formData, setFormData] = useState({
-    email: "",
+    identifier: "", // Email or Phone
     password: ""
   });
   const navigate = useNavigate();
@@ -30,39 +26,27 @@ export const LoginForm = () => {
     try {
       const response = await fetch(getApiUrl('/api/auth/login'), {
         method: 'POST',
-
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(formData)
       });
 
-      const contentType = response.headers.get("content-type");
-      let data;
-      if (contentType && contentType.includes("application/json")) {
-        data = await response.json();
-      } else {
-        const text = await response.text();
-        console.error("Non-JSON response:", text);
-        throw new Error(`Server Error: ${response.status}. The backend might be down or waking up. Please try again in 30 seconds.`);
-      }
+      const data = await response.json();
 
       if (response.ok) {
         localStorage.setItem('token', data.token);
 
-        // Decode JWT to check user role from database
         const tokenPayload = JSON.parse(atob(data.token.split('.')[1]));
         const role = tokenPayload.user?.role?.toLowerCase();
         const isAdmin = role === 'admin';
 
         toast({
-          title: "Success",
-          description: isAdmin ? "Welcome Admin!" : "Logged in successfully",
+          title: "Welcome back!",
+          description: isAdmin ? "Administrator access granted." : "Successfully logged into your account.",
         });
 
-        // Redirect based on role
         if (isAdmin) {
           navigate('/admin/dashboard');
         } else {
-          // If a customer tries to login via the main login form, send them to their dashboard
           navigate('/dashboard');
         }
       } else {
@@ -80,119 +64,129 @@ export const LoginForm = () => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center relative overflow-hidden bg-slate-900">
-      {/* Background Image with Overlay */}
-      <div className="absolute inset-0 z-0">
-        <img
-          src="https://images.unsplash.com/photo-1581094288338-2314dddb7ecc?q=80&w=2070&auto=format&fit=crop"
-          alt="Professional AC Service Background"
-          className="w-full h-full object-cover opacity-40"
-        />
-        <div className="absolute inset-0 bg-gradient-to-br from-blue-900/80 via-slate-900/90 to-black/90"></div>
+    <div className="min-h-screen flex items-center justify-center bg-white p-4 font-sans selection:bg-blue-100 selection:text-blue-900">
+      {/* Minimal Geometric Decorations */}
+      <div className="fixed top-0 left-0 w-full h-full pointer-events-none overflow-hidden -z-10">
+        <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-blue-50 rounded-full blur-[120px] opacity-60"></div>
+        <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] bg-amber-50 rounded-full blur-[120px] opacity-60"></div>
       </div>
 
-      <div className="container relative z-10 mx-auto px-4 flex justify-center items-center">
-        <Card className="w-full max-w-5xl bg-white/5 backdrop-blur-xl border border-white/10 shadow-2xl rounded-[2.5rem] overflow-hidden grid lg:grid-cols-2">
+      <div className="w-full max-w-[1000px] grid lg:grid-cols-2 gap-0 overflow-hidden rounded-[2.5rem] bg-white border border-slate-100 shadow-[0_32px_64px_-16px_rgba(0,0,0,0.08)]">
 
-          {/* Left Side: Brand Promo (Visible on Large Screens) */}
-          <div className="hidden lg:flex flex-col justify-between p-12 bg-blue-600/10 border-r border-white/5">
-            <div className="space-y-6">
-              <Link to="/" className="flex items-center space-x-3 group">
-                <BrandLogo size="md" variant="light" />
-              </Link>
+        {/* Visual Side */}
+        <div className="hidden lg:flex flex-col justify-between p-16 bg-blue-600 text-white relative overflow-hidden">
+          <div className="absolute inset-0 opacity-20">
+            <img
+              src="https://images.unsplash.com/photo-1581094288338-2314dddb7ecc?q=80&w=2070&auto=format&fit=crop"
+              className="w-full h-full object-cover"
+              alt="Background"
+            />
+            <div className="absolute inset-0 bg-blue-900/60"></div>
+          </div>
 
-              <div className="pt-12 space-y-4">
-                <h1 className="text-5xl font-black text-white leading-tight">
-                  Premium cooling <br />
-                  <span className="text-cyan-400">services in Vadodara.</span>
+          <div className="relative z-10 flex flex-col h-full justify-between">
+            <div>
+              <BrandLogo size="md" variant="light" />
+              <div className="mt-20 space-y-6">
+                <h1 className="text-6xl font-black leading-[1.1] tracking-tight">
+                  Welcome <br />
+                  <span className="text-white font-medium italic">back home.</span>
                 </h1>
-                <p className="text-slate-300 text-lg font-medium max-w-sm">
-                  Join thousands of happy customers who trust Roshni Enterprise for their home comfort needs.
+                <p className="text-blue-100 text-lg font-medium max-w-sm leading-relaxed">
+                  Log in to manage your bookings and enjoy personalized AC care.
                 </p>
               </div>
             </div>
 
             <div className="space-y-4">
-              <div className="flex items-center space-x-4 text-white/70">
-                <div className="w-10 h-10 bg-white/10 rounded-full flex items-center justify-center">
-                  <Lock className="w-5 h-5 text-cyan-400" />
-                </div>
-                <span className="font-bold">Secure User Authentication</span>
+              <div className="flex -space-x-3 overflow-hidden">
+                {[1, 2, 3, 4].map(i => (
+                  <img key={i} className="inline-block h-10 w-10 rounded-full ring-4 ring-blue-600 bg-slate-200" src={`https://i.pravatar.cc/100?img=${i + 10}`} alt="" />
+                ))}
+                <div className="flex items-center justify-center h-10 w-10 rounded-full ring-4 ring-blue-600 bg-blue-500 text-xs font-bold text-white">+2k</div>
               </div>
-              <p className="text-xs text-slate-400 font-bold uppercase tracking-widest">© 2024 Roshni Enterprise • Trusted Excellence</p>
+              <p className="text-sm font-bold text-blue-100">Joined by 2,000+ happy customers</p>
             </div>
           </div>
+        </div>
 
-          {/* Right Side: Login Form */}
-          <div className="p-8 md:p-12 lg:p-16 flex flex-col justify-center bg-white/10">
-            <div className="text-center lg:text-left space-y-4 mb-10">
-              <div className="lg:hidden mb-6 flex justify-center">
-                <BrandLogo size="md" variant="light" />
+        {/* Form Side */}
+        <div className="p-8 md:p-16 lg:p-20 flex flex-col justify-center">
+          <div className="mb-12 space-y-3">
+            <div className="lg:hidden mb-10">
+              <BrandLogo size="sm" />
+            </div>
+            <h2 className="text-4xl font-black text-slate-900 tracking-tight">Sign In</h2>
+            <p className="text-slate-500 font-medium">Access your Roshni Enterprise dashboard.</p>
+          </div>
+
+          <form onSubmit={handleSubmit} className="space-y-6">
+            <div className="space-y-2">
+              <Label htmlFor="identifier" className="text-slate-600 font-bold text-sm ml-1">Email or Phone</Label>
+              <div className="relative group">
+                <User className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-400 group-focus-within:text-blue-600 transition-colors" />
+                <Input
+                  id="identifier"
+                  type="text"
+                  placeholder="Email or 10-digit Phone"
+                  className="pl-12 h-14 bg-slate-50 border-transparent focus:bg-white focus:border-blue-600 focus:ring-4 focus:ring-blue-600/10 rounded-2xl transition-all text-base font-medium"
+                  value={formData.identifier}
+                  onChange={(e) => setFormData(prev => ({ ...prev, identifier: e.target.value }))}
+                  required
+                />
               </div>
-              <h2 className="text-3xl md:text-4xl font-black text-white tracking-tight">Welcome Back</h2>
-              <p className="text-slate-400 font-medium">Please enter your credentials to access your account.</p>
             </div>
 
-            <form onSubmit={handleSubmit} className="space-y-6">
-              <div className="space-y-2">
-                <Label htmlFor="email" className="text-slate-300 font-bold ml-1">Email</Label>
-                <div className="relative group">
-                  <User className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-500 group-focus-within:text-cyan-400 transition-colors" />
-                  <Input
-                    id="email"
-                    type="email"
-                    placeholder="name@example.com"
-                    className="pl-12 h-14 bg-white/5 border-white/10 text-white placeholder:text-slate-600 rounded-2xl focus:bg-white/10 focus:border-cyan-500/50 transition-all text-lg"
-                    value={formData.email}
-                    onChange={(e) => setFormData(prev => ({ ...prev, email: e.target.value }))}
-                    required
-                  />
-                </div>
+            <div className="space-y-2">
+              <div className="flex justify-between items-center ml-1">
+                <Label htmlFor="password" className="text-slate-600 font-bold text-sm">Password</Label>
+                <button type="button" className="text-sm font-bold text-blue-600 hover:text-blue-700">Forgot?</button>
               </div>
-
-              <div className="space-y-2">
-                <div className="flex justify-between items-center px-1">
-                  <Label htmlFor="password" text-slate-300 font-bold>Password</Label>
-                  <a href="#" className="text-sm font-bold text-cyan-400 hover:text-cyan-300 transition-colors">Forgot?</a>
-                </div>
-                <div className="relative group">
-                  <Lock className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-500 group-focus-within:text-cyan-400 transition-colors" />
-                  <Input
-                    id="password"
-                    type={showPassword ? "text" : "password"}
-                    placeholder="••••••••"
-                    className="pl-12 pr-12 h-14 bg-white/5 border-white/10 text-white placeholder:text-slate-600 rounded-2xl focus:bg-white/10 focus:border-cyan-500/50 transition-all text-lg"
-                    value={formData.password}
-                    onChange={(e) => setFormData(prev => ({ ...prev, password: e.target.value }))}
-                    required
-                  />
-                  <button
-                    type="button"
-                    onClick={() => setShowPassword(!showPassword)}
-                    className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-500 hover:text-white transition-colors"
-                  >
-                    {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
-                  </button>
-                </div>
+              <div className="relative group">
+                <Lock className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-400 group-focus-within:text-blue-600 transition-colors" />
+                <Input
+                  id="password"
+                  type={showPassword ? "text" : "password"}
+                  placeholder="••••••••"
+                  maxLength={8}
+                  className="pl-12 pr-12 h-14 bg-slate-50 border-transparent focus:bg-white focus:border-blue-600 focus:ring-4 focus:ring-blue-600/10 rounded-2xl transition-all text-base font-medium"
+                  value={formData.password}
+                  onChange={(e) => setFormData(prev => ({ ...prev, password: e.target.value }))}
+                  required
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 transition-colors"
+                >
+                  {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
+                </button>
               </div>
+            </div>
 
+            <div className="pt-4">
               <Button
                 type="submit"
                 disabled={isLoading}
-                className="w-full bg-blue-600 hover:bg-blue-500 text-white h-14 rounded-2xl font-black text-lg shadow-xl shadow-blue-600/20 active:scale-[0.98] transition-all"
+                className="w-full bg-blue-600 hover:bg-blue-700 text-white h-16 rounded-[1.25rem] font-bold text-lg shadow-[0_20px_40px_-12px_rgba(37,99,235,0.3)] active:scale-[0.98] transition-all group"
               >
-                {isLoading ? <Loader2 className="w-6 h-6 animate-spin mx-auto" /> : "Sign In Now"}
+                {isLoading ? (
+                  <Loader2 className="w-6 h-6 animate-spin mx-auto text-white" />
+                ) : (
+                  <span className="flex items-center justify-center gap-2">
+                    Sign In
+                    <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
+                  </span>
+                )}
               </Button>
-            </form>
-
-            <div className="text-center mt-12">
-              <p className="text-slate-400 font-medium">
-                Don't have an account?
-                <Link to="/signup" className="text-cyan-400 hover:text-cyan-300 ml-2 font-black transition-colors">Create Account</Link>
-              </p>
             </div>
-          </div>
-        </Card>
+          </form>
+
+          <p className="mt-12 text-center text-slate-500 font-medium">
+            New to Roshni?
+            <Link to="/signup" className="text-blue-600 hover:text-blue-700 font-black ml-2 underline underline-offset-4 decoration-2 decoration-blue-100 hover:decoration-blue-500 transition-all">Create Account</Link>
+          </p>
+        </div>
       </div>
     </div>
   );

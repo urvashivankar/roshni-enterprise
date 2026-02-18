@@ -10,17 +10,23 @@ const User = require('../models/User');
 // @desc    Register user
 // @route   POST api/auth/register
 exports.register = async (req, res) => {
-    const { email, password } = req.body;
+    const { email, phoneNumber, password } = req.body;
+
+    // Validate password length strictly to 8 characters
+    if (!password || password.length !== 8) {
+        return res.status(400).json({ message: 'Password must be exactly 8 characters' });
+    }
 
     try {
-        let user = await User.findOne({ email });
+        let user = await User.findOne({ $or: [{ email }, { phoneNumber }] });
 
         if (user) {
-            return res.status(400).json({ message: 'User already exists' });
+            return res.status(400).json({ message: 'User already exists with this email or phone number' });
         }
 
         user = new User({
             email,
+            phoneNumber,
             password
         });
 
@@ -54,10 +60,16 @@ exports.register = async (req, res) => {
 // @desc    Authenticate user & get token
 // @route   POST api/auth/login
 exports.login = async (req, res) => {
-    const { email, password } = req.body;
+    const { identifier, password } = req.body; // 'identifier' can be email or phone
 
     try {
-        let user = await User.findOne({ email });
+        // Find user by email OR phone number
+        let user = await User.findOne({
+            $or: [
+                { email: identifier },
+                { phoneNumber: identifier }
+            ]
+        });
 
         if (!user) {
             return res.status(400).json({ message: 'Invalid Credentials' });
