@@ -2,7 +2,6 @@
 
 **Roshni Enterprise** is a comprehensive digital ecosystem designed to revolutionize AC service management in Vadodara. Bridging the gap between customers and service professionals, we offer a seamless, premium experience for booking, tracking, and managing air conditioning services.
 
-![Roshni Enterprise - Home Page](./assets/roshni_enterprise_home.png)
 
 ---
 
