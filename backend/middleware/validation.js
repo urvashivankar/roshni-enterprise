@@ -122,11 +122,9 @@ const validateReview = [
 
 // Login validation middleware
 const validateLogin = [
-    body('email')
-        .notEmpty().withMessage('Email is required')
-        .isEmail().withMessage('Invalid email format')
-        .isLength({ max: 25 }).withMessage('Email cannot exceed 25 characters')
-        .normalizeEmail(),
+    body('identifier')
+        .notEmpty().withMessage('Email or Phone is required')
+        .trim(),
 
     body('password')
         .notEmpty().withMessage('Password is required'),

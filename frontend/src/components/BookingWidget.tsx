@@ -1,7 +1,7 @@
 import { getApiUrl } from "@/config";
 import { useState, useRef, useEffect } from "react";
 import { useToast } from "@/components/ui/use-toast";
-import { Loader2, AlertCircle, Calendar as CalendarIcon, Clock, User, Phone, MapPin, Wrench, CheckCircle2, Zap, ArrowLeft, ArrowRight, Check } from "lucide-react";
+import { Loader2, AlertCircle, Calendar as CalendarIcon, Clock, User, Phone, MapPin, Wrench, CheckCircle2, Zap, ArrowLeft, ArrowRight, Check, LocateFixed } from "lucide-react";
 import { bookingSchema, validateSingleField } from "@/lib/validation";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -27,6 +27,7 @@ export const BookingWidget = ({ initialService }: { initialService?: string }) =
   const [phone, setPhone] = useState("");
   const [area, setArea] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [isLocating, setIsLocating] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const { toast } = useToast();
 
@@ -154,6 +155,60 @@ export const BookingWidget = ({ initialService }: { initialService?: string }) =
     } finally {
       setIsLoading(false);
     }
+  };
+
+  const handleLocateMe = () => {
+    if (!navigator.geolocation) {
+      toast({
+        title: "Not Supported",
+        description: "Geolocation is not supported by your browser.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setIsLocating(true);
+    navigator.geolocation.getCurrentPosition(
+      async (position) => {
+        try {
+          const { latitude, longitude } = position.coords;
+          const response = await fetch(
+            `https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}`
+          );
+          const data = await response.json();
+          const address = data.display_name || "Detected Location";
+
+          setArea(`${address} (GPS: ${latitude.toFixed(6)}, ${longitude.toFixed(6)})`);
+          setErrors(prev => ({ ...prev, area: '' }));
+
+          toast({
+            title: "Location Detected",
+            description: "Your address has been auto-filled.",
+          });
+        } catch (error) {
+          console.error("Reverse geocoding error:", error);
+          toast({
+            title: "Error",
+            description: "Could not fetch address details. Please type manually.",
+            variant: "destructive",
+          });
+        } finally {
+          setIsLocating(false);
+        }
+      },
+      (error) => {
+        console.error("Geolocation error:", error);
+        let msg = "Could not detect location.";
+        if (error.code === error.PERMISSION_DENIED) msg = "Please enable location access.";
+
+        toast({
+          title: "Location Access Denied",
+          description: msg,
+          variant: "destructive",
+        });
+        setIsLocating(false);
+      }
+    );
   };
 
   const handleCloseDialog = () => {
@@ -311,7 +366,22 @@ export const BookingWidget = ({ initialService }: { initialService?: string }) =
                     </div>
 
                     <div className="space-y-2">
-                      <Label>Address / Area</Label>
+                      <div className="flex justify-between items-center px-1">
+                        <Label>Address / Area</Label>
+                        <button
+                          type="button"
+                          onClick={handleLocateMe}
+                          disabled={isLocating}
+                          className="text-[10px] font-black text-blue-600 hover:text-blue-700 uppercase tracking-widest flex items-center gap-1.5 transition-all active:scale-95 disabled:opacity-50"
+                        >
+                          {isLocating ? (
+                            <Loader2 className="w-3 h-3 animate-spin" />
+                          ) : (
+                            <LocateFixed className="w-3 h-3" />
+                          )}
+                          Use My Location
+                        </button>
+                      </div>
                       <div className="relative">
                         <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
                         <Input
