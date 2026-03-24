@@ -10,55 +10,39 @@ const { rateLimiter } = require('./middleware/rateLimiter');
 require('dotenv').config();
 
 const app = express();
+const server = http.createServer(app);
+const PORT = process.env.PORT || 5000;
 app.use(helmet({
     crossOriginResourcePolicy: false, // Required for static uploads to work if on same domain
 }));
 app.use(morgan('dev'));
-app.use(rateLimiter); // Apply global rate limiting
-const server = http.createServer(app);
-const PORT = process.env.PORT || 5000;
+app.use(rateLimiter);
 
+// Middleware
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 
-// Ultimate CORS Fix - Manual Middleware for absolute control
-const allowedOrigins = [
-    'http://localhost:8080',
-    'http://localhost:5173',
-    'http://localhost:3000',
-    'https://cooling-comfort-connect.vercel.app',
-    'https://roshni-enterprise.vercel.app',
-    'https://roshni-enterprise-urvashivankars-projects.vercel.app'
-];
-
-app.use((req, res, next) => {
-    const origin = req.headers.origin;
-
-    // Check if origin is allowed
-    const isAllowed = !origin ||
-        allowedOrigins.includes(origin) ||
-        origin.endsWith('.vercel.app') ||
-        origin.includes('localhost');
-
-    if (isAllowed && origin) {
-        res.setHeader('Access-Control-Allow-Origin', origin);
-    } else if (!origin) {
-        // No origin usually means server-to-server or non-browser request
-        res.setHeader('Access-Control-Allow-Origin', '*');
-    }
-
-    res.setHeader('Access-Control-Allow-Credentials', 'true');
-    res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, PATCH, DELETE, OPTIONS');
-    res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Requested-With, Accept, Origin');
-
-    // Handle Preflight
-    if (req.method === 'OPTIONS') {
-        return res.status(200).end();
-    }
-
-    // Simple Request Logger
-    console.log(`[${new Date().toISOString()}] ${req.method} ${req.url}`);
-
-    next();
-});
+// Standard CORS configuration
+app.use(cors({
+    origin: (origin, callback) => {
+        const allowedOrigins = [
+            'http://localhost:8080',
+            'http://localhost:5173',
+            'http://localhost:3000',
+            'https://cooling-comfort-connect.vercel.app',
+            'https://roshni-enterprise.vercel.app',
+            'https://roshni-enterprise-urvashivankars-projects.vercel.app'
+        ];
+        if (!origin || allowedOrigins.includes(origin) || origin.endsWith('.vercel.app') || origin.includes('localhost')) {
+            callback(null, true);
+        } else {
+            callback(new Error('Not allowed by CORS'));
+        }
+    },
+    credentials: true,
+    methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'Accept', 'Origin']
+}));
 
 const io = new Server(server, {
     cors: {
@@ -89,9 +73,6 @@ const analyticsRoutes = require('./routes/analytics');
 const auditLogRoutes = require('./routes/auditLog');
 const errorHandler = require('./middleware/errorHandler');
 
-// Middleware
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
 // Routes

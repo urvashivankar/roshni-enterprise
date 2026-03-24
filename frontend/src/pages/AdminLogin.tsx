@@ -59,11 +59,21 @@ const AdminLogin = () => {
                 data = await response.json();
             } else {
                 const text = await response.text();
-                throw new Error("Server returned non-JSON response");
+                console.error("Non-JSON response received:", text);
+                throw new Error(`Server error: ${response.status}. Please check backend logs.`);
             }
 
             if (response.ok) {
-                const tokenPayload = JSON.parse(atob(data.token.split('.')[1]));
+                if (!data || !data.token) {
+                    throw new Error("Authentication succeeded but no token was returned.");
+                }
+
+                const tokenParts = data.token.split('.');
+                if (tokenParts.length < 2) {
+                    throw new Error("Invalid token format received from server.");
+                }
+
+                const tokenPayload = JSON.parse(atob(tokenParts[1]));
                 const role = tokenPayload.user?.role?.toLowerCase();
 
                 if (role === 'admin') {

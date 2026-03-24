@@ -11,7 +11,7 @@ const createAdmin = async () => {
         console.log('Connected to MongoDB');
 
         const adminEmail = 'admin@roshni.com';
-        const adminPassword = 'admin123'; // 8 chars min for safety, though model doesn't enforce length, only controller
+        const adminPassword = 'adminpassword123';
         const phoneNumber = '9000000000';
 
         // Check if user already exists
